@@ -164,8 +164,9 @@ def main(argv=None):
 
     # pldmgr shape: {"name": ..., "payloads": [...]} -- 'name' first, no per-run
     # timestamp (a changing timestamp would make every run produce a git diff).
-    main_manifest = {"name": "Z3nT1's PLUZ5 -- Source", "payloads": main_entries}
-    hosted_manifest = {"name": "Z3nT1's PLUZ5 -- Hosted", "payloads": hosted_entries}
+    owner = env.get("GH_USER") or "My"
+    main_manifest = {"name": f"{owner}'s PLUZ5 -- Source", "payloads": main_entries}
+    hosted_manifest = {"name": f"{owner}'s PLUZ5 -- Hosted", "payloads": hosted_entries}
 
     (root / cfg["settings"]["manifest_files"]["main"]).parent.mkdir(parents=True, exist_ok=True)
     (root / cfg["settings"]["manifest_files"]["main"]).write_text(json.dumps(main_manifest, indent=2), encoding="utf-8")
@@ -181,7 +182,7 @@ def main(argv=None):
         old.unlink()
     for category, entries in split_buckets.items():
         safe_name = category.lower().replace(" ", "_").replace("&", "and")
-        out = {"name": f"Z3nT1's PLUZ5 -- {category}", "payloads": entries}
+        out = {"name": f"{owner}'s PLUZ5 -- {category}", "payloads": entries}
         (split_dir / f"ps5_{safe_name}.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
     log.line(f"Category splits written: {len(split_buckets)}")
     log.line(f"Wrote {len(main_entries)} entries to {cfg['settings']['manifest_files']['main']}")

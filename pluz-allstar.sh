@@ -58,6 +58,14 @@ if ! "$GIT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     "$GIT" reset "origin/$GH_BRANCH" >/dev/null 2>&1 || true
 fi
 "$GIT" remote get-url origin >/dev/null 2>&1 || fail "No remote named origin."
+"$PY" core/pluz_origin.py; rc=$?
+if [ "$rc" = "3" ]; then
+    "$GIT" "${NOHELP[@]}" -c "http.extraheader=$GHAUTH" fetch origin \
+        || echo "[WARN] Could not read the repo named in .env yet. Check GH_USER / GH_REPO / GH_TOKEN."
+    "$GIT" reset "origin/$GH_BRANCH" >/dev/null 2>&1 || true
+elif [ "$rc" != "0" ]; then
+    echo "[WARN] Could not check the repo address."
+fi
 "$GIT" "${NOHELP[@]}" -c "http.extraheader=$GHAUTH" pull --rebase --autostash origin "$GH_BRANCH" \
     || echo "[WARN] Could not pull the latest from GitHub -- continuing. If the push fails, run again with: debug"
 

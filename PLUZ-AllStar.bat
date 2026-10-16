@@ -111,6 +111,14 @@ if errorlevel 1 (
     goto :end
 )
 
+"%PY%" "core\pluz_origin.py"
+if errorlevel 3 (
+    "%GIT%" %NOHELP% -c "http.extraheader=%GHAUTH%" fetch origin
+    if errorlevel 1 echo [WARN] Could not read the repo named in .env yet. Check GH_USER / GH_REPO / GH_TOKEN.
+    "%GIT%" reset origin/%GH_BRANCH% >nul 2>&1
+) else (
+    if errorlevel 1 echo [WARN] Could not check the repo address.
+)
 "%GIT%" %NOHELP% -c "http.extraheader=%GHAUTH%" pull --rebase --autostash origin %GH_BRANCH%
 if errorlevel 1 echo [WARN] Could not pull the latest from GitHub - continuing. If the push fails at the end, run this again with: debug
 

@@ -67,6 +67,7 @@ button:disabled{opacity:.45;cursor:default}
     <input id="filter" class="grow" type="search" placeholder="Filter entries…">
     <button id="openBtn">Open .json…</button>
     <button id="exampleBtn">Load example list</button>
+    <button id="repoBtn" title="Reads configs/payload_registry.json from the repo named in section 3">Load from my repo</button>
     <button class="pri" id="dlBtn">Download payload_registry.json</button>
     <button id="saveBtn" style="display:none">Save to opened file</button>
     <button class="del" id="clearBtn">Clear all</button>
@@ -279,6 +280,13 @@ button:disabled{opacity:.45;cursor:default}
   $("exampleBtn").addEventListener("click", function () {
     fetch("../examples/example-full.json").then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
       .then(readJsonText).catch(function () { status("Could not load ../examples/example-full.json (open this page from your GitHub Pages site, or use Open .json).", "warn"); });
+  });
+  $("repoBtn").addEventListener("click", function () {
+    var o = $("owner").value.trim(), r = $("repo").value.trim(), br = $("branch").value.trim() || "main";
+    if (!o || !r) return status("Fill in your GitHub user and repo name in section 3 first.", "warn");
+    fetch("https://raw.githubusercontent.com/" + encodeURIComponent(o) + "/" + encodeURIComponent(r) + "/" + encodeURIComponent(br) + "/configs/payload_registry.json", { cache: "no-store" })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status + " (repo private, or the name is wrong?)"); return res.text(); })
+      .then(readJsonText).catch(function (e) { status("Could not read your repo: " + e.message, "err"); });
   });
   function jsonText() { return JSON.stringify(toRegistry(), null, 2) + "\n"; }
   $("dlBtn").addEventListener("click", function () {
