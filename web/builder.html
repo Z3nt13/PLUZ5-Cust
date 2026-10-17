@@ -8,7 +8,7 @@
 :root{--bg:#000;--surface:#050b08;--card:#081209;--border:#0e2016;--text:#e2e8f0;--muted:#6b8070;
   --accent:#00e699;--sub:#00f0ff;--danger:#ff6b6b;--ok:#4ade80;--warn:#facc15;--r:8px;}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",sans-serif;line-height:1.4;padding-bottom:60px}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",sans-serif;line-height:1.4;padding-bottom:20px}
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:5}
 .logo{font-weight:700;color:var(--accent);letter-spacing:.05em;font-size:1.15rem}.logo span{color:var(--sub)}
 header a{color:var(--sub);font-size:.85rem;text-decoration:none}
@@ -25,21 +25,40 @@ button.pri{background:var(--accent);color:#000;border-color:var(--accent);font-w
 button.del{color:var(--danger)}
 button:disabled{opacity:.45;cursor:default}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.row select{width:auto}
 .grow{flex:1;min-width:160px}
+.lab{font-size:.72rem;color:var(--muted);white-space:nowrap}
 #status{font-size:.82rem;margin-top:8px;white-space:pre-wrap}
 .ok{color:var(--ok)}.err{color:var(--danger)}.warn{color:var(--warn)}
-#cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.tools{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;margin-top:10px}
+.chip{padding:3px 10px;border-radius:999px;font-size:.75rem;cursor:pointer;user-select:none}
+.chip.on{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+details{margin-top:8px;font-size:.82rem}
+summary{cursor:pointer;color:var(--sub)}
+details table{border-collapse:collapse;margin:6px 0;width:100%}
+details td,details th{border:1px solid var(--border);padding:5px 8px;text-align:left;vertical-align:top}
+details th{color:var(--muted);font-weight:600}
+#summary{font-size:.82rem;margin:10px 0 0;color:var(--muted)}
+#cards{margin-top:10px}
+.grp{font-size:.85rem;color:var(--sub);margin:14px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--border)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px}
-.card h3{font-size:.9rem;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.card h3 small{color:var(--muted);font-weight:400;word-break:break-all}
+.card.sel{border-color:var(--accent)}
+.card h3{font-size:.9rem;display:flex;gap:8px;align-items:center}
+.card h3 .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.card h3 small{color:var(--muted);font-weight:400}
+.pct{font-weight:700;font-size:.8rem;border:1px solid currentColor;border-radius:999px;padding:1px 8px;white-space:nowrap}
 .card .src{font-size:.75rem;color:var(--muted);word-break:break-all;margin:2px 0 6px}
 .card .src a{color:var(--sub)}
 .g{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .g label{font-size:.7rem;color:var(--muted);display:block;margin-top:4px}
 .full{grid-column:1/3}
 .flag{font-size:.75rem;margin-top:6px}
+.miss{font-size:.72rem;color:var(--muted);margin-top:6px}
 .links code{display:block;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:6px 8px;font-size:.78rem;word-break:break-all;margin:4px 0}
 .links .lrow{display:flex;gap:8px;align-items:flex-start}.links .lrow code{flex:1}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px 0 28px}
+footer b{color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -64,7 +83,10 @@ button:disabled{opacity:.45;cursor:default}
 <section>
   <h2>2. Your registry</h2>
   <div class="row" style="margin-top:0">
-    <input id="filter" class="grow" type="search" placeholder="Filter entries…">
+    <span class="lab">Store name (shown at the top of the JSON and in pldmgr)</span>
+    <input id="storeName" class="grow" type="text" maxlength="60" placeholder="e.g. Geoz's PS5 Payload Store">
+  </div>
+  <div class="row">
     <button id="openBtn">Open .json…</button>
     <button id="exampleBtn">Load example list</button>
     <button id="repoBtn" title="Reads configs/payload_registry.json from the repo named in section 3">Load from my repo</button>
@@ -74,7 +96,61 @@ button:disabled{opacity:.45;cursor:default}
     <input type="file" id="file" accept=".json,application/json" style="display:none">
   </div>
   <div class="hint">Then upload the downloaded file to <code>configs/</code> in your repo (replace the old one) and commit. The update workflow does the rest.</div>
-  <div id="cards" style="margin-top:10px"></div>
+
+  <div class="tools">
+    <div class="row" style="margin-top:0">
+      <input id="filter" class="grow" type="search" placeholder="Filter by text…">
+      <span class="lab">Sort</span>
+      <select id="sort">
+        <option value="name-az">Name A→Z (0-9 first)</option>
+        <option value="name-za">Name Z→A</option>
+        <option value="author-az">Author A→Z</option>
+        <option value="comp-desc">Info % high → low</option>
+        <option value="comp-asc">Info % low → high</option>
+        <option value="url-yes">Source URL: has one first</option>
+        <option value="url-no">Source URL: missing first</option>
+        <option value="cat">Category</option>
+      </select>
+      <span class="lab">Group by</span>
+      <select id="group">
+        <option value="none">No grouping</option>
+        <option value="cat">Category</option>
+        <option value="author">Author</option>
+        <option value="hw">Hardware (P5 / P5P / P5U)</option>
+        <option value="plat">Platform</option>
+        <option value="url">Source URL yes / no</option>
+        <option value="info">Info completeness</option>
+      </select>
+      <button id="resortBtn" title="Edits inside a card do not move it. Press to re-sort.">Re-sort</button>
+    </div>
+    <div class="row" id="chips"></div>
+    <div class="row">
+      <button id="selShown">Select shown</button>
+      <button id="selNone">Clear selection</button>
+      <span class="lab" id="selCount">0 selected</span>
+      <span class="lab">Set on selected →</span>
+      <select id="bulkHw"></select>
+      <select id="bulkPlat"></select>
+      <select id="bulkCat"></select>
+      <button class="pri" id="bulkApply">Apply</button>
+    </div>
+    <details>
+      <summary>What are P5, P5P and P5U, and how are they used?</summary>
+      <table>
+        <tr><th>Tag</th><th>Meaning</th></tr>
+        <tr><td><b>P5</b></td><td>Optimized only for the regular / slim PS5.</td></tr>
+        <tr><td><b>P5P</b></td><td>Optimized for the PS5 Pro.</td></tr>
+        <tr><td><b>P5U</b></td><td>Universal: optimized for both the regular / slim PS5 and the PS5 Pro.</td></tr>
+        <tr><td><b>(blank)</b></td><td>Not stated. Leave it blank unless the developer says so; it is never guessed.</td></tr>
+      </table>
+      <div class="hint">How it is used: it is saved as <code>hw_target</code> in the manifest and shown as a badge and filter in the catalog.
+      Read it together with <b>FW min / FW max</b>: the firmware range says <i>which software version</i> the payload works on,
+      the tag says <i>which console model</i> it was made for. Set it per card, or tick several cards and use "Set on selected".</div>
+    </details>
+  </div>
+
+  <div id="summary"></div>
+  <div id="cards"></div>
 </section>
 
 <section class="links">
@@ -88,14 +164,19 @@ button:disabled{opacity:.45;cursor:default}
 </section>
 
 </main>
+<footer>Powered By <b>Z3nT13's PLUZ5</b></footer>
 <script>
 (function () {
   "use strict";
+  var POWERED = "Powered By Z3nT13's PLUZ5";
   var CATS = ["Kernel","Network","File Management","Game Tools","Media","System Utility","Debug & SDK","Linux","Activation & Spoof","Unknown"];
-  var CH = ["stable","beta","alpha"], HW = ["","P5","P5P","P5U"], PLAT = ["","ps5","ps4","ps4/ps5"];
+  var CH = ["stable","beta","alpha"];
+  var HW = [["", "— not stated"], ["P5", "P5 · regular/slim"], ["P5P", "P5P · PS5 Pro"], ["P5U", "P5U · universal"]];
+  var PLAT = [["", "— (ps5)"], ["ps5", "ps5"], ["ps4", "ps4"], ["ps4/ps5", "ps4/ps5"]];
   var meta = { schema_version: 6, comment: "Your sources. Build/edit with web/builder.html." };
-  var rows = [];          // {id, variant, e}
+  var rows = [];            // {id, variant, e, sel, flags}
   var fileHandle = null, dirty = false;
+  var view = { plat: {}, hw: {}, url: {} };
 
   function $(i) { return document.getElementById(i); }
   function el(tag, props, kids) {
@@ -111,21 +192,43 @@ button:disabled{opacity:.45;cursor:default}
   function status(msg, kind) { var s = $("status"); s.textContent = msg; s.className = kind || ""; }
   function setDirty(v) { dirty = v; $("count").textContent = rows.length + " entr" + (rows.length === 1 ? "y" : "ies") + (v ? " · unsaved changes" : ""); }
 
+  // ---------- info completeness ----------
+  function has(v) { return v != null && String(v).trim() !== "" && !/^unset/i.test(String(v).trim()); }
+  function isUrl(v) { return /^https?:\/\//i.test(String(v || "")); }
+  var INFO = [
+    ["Source URL", function (e) { return isUrl(e.source_repo) || isUrl(e.direct_url); }],
+    ["Author", function (e) { return has(e.author); }],
+    ["Author link", function (e) { return isUrl(e.author_url); }],
+    ["Category", function (e) { return has(e.category) && e.category !== "Unknown"; }],
+    ["FW min", function (e) { return has(e.fw_min); }],
+    ["FW max", function (e) { return has(e.fw_max); }],
+    ["Hardware tag", function (e) { return e.hw_target === "P5" || e.hw_target === "P5P" || e.hw_target === "P5U"; }],
+    ["Note", function (e) { return has(e.note); }]
+  ];
+  function score(e) {
+    var missing = [];
+    INFO.forEach(function (f) { if (!f[1](e)) missing.push(f[0]); });
+    return { pct: Math.round(100 * (INFO.length - missing.length) / INFO.length), missing: missing };
+  }
+  function pctColor(p) { return "hsl(" + Math.round(p * 1.2) + ",75%,52%)"; }   // 0% red -> 100% green
+  function nm(r) { return String(r.e.display_name || r.id); }
+
   // ---------- registry <-> rows ----------
   function loadRegistry(data) {
     if (!data || typeof data !== "object" || !data.payloads || typeof data.payloads !== "object")
       throw new Error("Not a PLUZ registry file (no top-level \"payloads\" object).");
     meta = {};
-    Object.keys(data).forEach(function (k) { if (k !== "payloads") meta[k] = data[k]; });
+    Object.keys(data).forEach(function (k) { if (k !== "payloads" && k !== "store_name" && k !== "powered_by") meta[k] = data[k]; });
+    $("storeName").value = data.store_name || "";
     rows = [];
     Object.keys(data.payloads).forEach(function (id) {
       var vs = (data.payloads[id] || {}).variants || {};
-      Object.keys(vs).forEach(function (v) { rows.push({ id: id, variant: v, e: vs[v] }); });
+      Object.keys(vs).forEach(function (v) { rows.push({ id: id, variant: v, e: vs[v], sel: false }); });
     });
     render(); setDirty(false);
   }
   function toRegistry() {
-    var out = {}, payloads = {};
+    var out = { store_name: $("storeName").value.trim() || "My PLUZ5 Store" }, payloads = {};
     Object.keys(meta).forEach(function (k) { out[k] = meta[k]; });
     rows.slice().sort(function (a, b) { return (a.id + "/" + a.variant).toLowerCase() < (b.id + "/" + b.variant).toLowerCase() ? -1 : 1; })
       .forEach(function (r) {
@@ -134,12 +237,13 @@ button:disabled{opacity:.45;cursor:default}
         Object.keys(r.e).forEach(function (k) {
           var v = r.e[k];
           if (k[0] === "_") return;                       // UI-only keys
-          if (v === "" && ["hw_target", "platform", "asset_pattern", "tag_pattern", "fw_min", "fw_max"].indexOf(k) >= 0) return;
+          if (v === "" && ["hw_target", "platform", "asset_pattern", "tag_pattern", "fw_min", "fw_max", "direct_url", "version"].indexOf(k) >= 0) return;
           e[k] = v;
         });
         payloads[r.id].variants[r.variant] = e;
       });
     out.payloads = payloads;
+    out.powered_by = POWERED;                              // always the last key
     return out;
   }
 
@@ -189,7 +293,7 @@ button:disabled{opacity:.45;cursor:default}
           protected_fallback: false, note: repo.description || ""
         };
         if (pattern) e.asset_pattern = pattern;
-        rows.push({ id: id, variant: variant, e: e, flags: flags });
+        rows.push({ id: id, variant: variant, e: e, sel: false, flags: flags });
         return "added " + id + (variant !== "default" ? "/" + variant : "") + (flags.length ? "  (" + flags.length + " note)" : "");
       });
   }
@@ -211,59 +315,185 @@ button:disabled{opacity:.45;cursor:default}
     });
   });
 
+  // ---------- filters / sort / group ----------
+  function entryUrlState(r) { return (isUrl(r.e.source_repo) || isUrl(r.e.direct_url)) ? "has" : "none"; }
+  function matches(r) {
+    var q = $("filter").value.trim().toLowerCase();
+    if (q && (r.id + " " + r.variant + " " + nm(r) + " " + (r.e.author || "")).toLowerCase().indexOf(q) < 0) return false;
+    function pass(set, val) { var on = Object.keys(set).filter(function (k) { return set[k]; }); return !on.length || on.indexOf(val) >= 0; }
+    return pass(view.plat, r.e.platform || "") && pass(view.hw, r.e.hw_target || "") && pass(view.url, entryUrlState(r));
+  }
+  function byName(a, b) { return nm(a).localeCompare(nm(b), undefined, { numeric: true, sensitivity: "base" }); }
+  var SORTS = {
+    "name-az": byName,
+    "name-za": function (a, b) { return byName(b, a); },
+    "author-az": function (a, b) { return String(a.e.author || "~").localeCompare(String(b.e.author || "~"), undefined, { sensitivity: "base" }) || byName(a, b); },
+    "comp-desc": function (a, b) { return score(b.e).pct - score(a.e).pct || byName(a, b); },
+    "comp-asc": function (a, b) { return score(a.e).pct - score(b.e).pct || byName(a, b); },
+    "url-yes": function (a, b) { return (entryUrlState(a) === "has" ? 0 : 1) - (entryUrlState(b) === "has" ? 0 : 1) || byName(a, b); },
+    "url-no": function (a, b) { return (entryUrlState(a) === "has" ? 1 : 0) - (entryUrlState(b) === "has" ? 1 : 0) || byName(a, b); },
+    "cat": function (a, b) { return String(a.e.category || "").localeCompare(String(b.e.category || "")) || byName(a, b); }
+  };
+  function groupKey(mode, r) {
+    var p;
+    if (mode === "cat") return r.e.category || "Unknown";
+    if (mode === "author") return has(r.e.author) ? r.e.author : "No author";
+    if (mode === "hw") return r.e.hw_target || "Not stated";
+    if (mode === "plat") return r.e.platform || "ps5 (default)";
+    if (mode === "url") return entryUrlState(r) === "has" ? "Has a source URL" : "No source URL";
+    if (mode === "info") { p = score(r.e).pct; return p === 100 ? "100% complete" : p >= 75 ? "75–99%" : p >= 50 ? "50–74%" : "Under 50%"; }
+    return "";
+  }
+  var INFO_ORDER = ["100% complete", "75–99%", "50–74%", "Under 50%"];
+  var LAST = ["No author", "Not stated", "No source URL", "Unknown"];
+  function groupOrder(mode, keys) {
+    if (mode === "info") return INFO_ORDER.filter(function (k) { return keys.indexOf(k) >= 0; });
+    if (mode === "url") return ["Has a source URL", "No source URL"].filter(function (k) { return keys.indexOf(k) >= 0; });
+    return keys.slice().sort(function (a, b) {
+      var la = LAST.indexOf(a) >= 0 ? 1 : 0, lb = LAST.indexOf(b) >= 0 ? 1 : 0;
+      return la - lb || a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+    });
+  }
+
+  // ---------- chips / bulk controls ----------
+  function buildChips() {
+    var box = $("chips"); box.textContent = "";
+    function make(label, setName, items) {
+      box.appendChild(el("span", { class: "lab", text: label }));
+      items.forEach(function (it) {
+        var c = el("button", { class: "chip" + (view[setName][it[0]] ? " on" : ""), text: it[1], title: "Click to filter; select several to show any of them", on: { click: function () {
+          view[setName][it[0]] = !view[setName][it[0]]; c.className = "chip" + (view[setName][it[0]] ? " on" : ""); render(); } } });
+        box.appendChild(c);
+      });
+    }
+    make("Platform:", "plat", [["ps5", "ps5"], ["ps4", "ps4"], ["ps4/ps5", "ps4/ps5"], ["", "not set"]]);
+    make("Hardware:", "hw", [["P5", "P5"], ["P5P", "P5P"], ["P5U", "P5U"], ["", "not set"]]);
+    make("Source URL:", "url", [["has", "has one"], ["none", "missing"]]);
+  }
+  function fillSelect(id, first, list) {
+    var s = $(id); s.textContent = "";
+    s.appendChild(el("option", { value: "__keep", text: first }));
+    list.forEach(function (o) { var v = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; s.appendChild(el("option", { value: v === "" ? "__clear" : v, text: t })); });
+  }
+  fillSelect("bulkHw", "Hardware…", HW); fillSelect("bulkPlat", "Platform…", PLAT); fillSelect("bulkCat", "Category…", CATS);
+  function selInfo() {
+    var n = rows.filter(function (r) { return r.sel; }).length;
+    var hidden = rows.filter(function (r) { return r.sel && !matches(r); }).length;
+    $("selCount").textContent = n + " selected" + (hidden ? " (" + hidden + " hidden by filters)" : "");
+  }
+  $("selShown").addEventListener("click", function () { rows.forEach(function (r) { if (matches(r)) r.sel = true; }); render(); });
+  $("selNone").addEventListener("click", function () { rows.forEach(function (r) { r.sel = false; }); render(); });
+  $("bulkApply").addEventListener("click", function () {
+    var sel = rows.filter(function (r) { return r.sel; });
+    if (!sel.length) return status("Tick some cards first (or press \"Select shown\").", "warn");
+    var hw = $("bulkHw").value, pl = $("bulkPlat").value, ct = $("bulkCat").value;
+    if (hw === "__keep" && pl === "__keep" && ct === "__keep") return status("Choose a Hardware, Platform or Category value to apply.", "warn");
+    sel.forEach(function (r) {
+      if (hw !== "__keep") r.e.hw_target = hw === "__clear" ? "" : hw;
+      if (pl !== "__keep") r.e.platform = pl === "__clear" ? "" : pl;
+      if (ct !== "__keep") r.e.category = ct;
+    });
+    status("Updated " + sel.length + " entr" + (sel.length === 1 ? "y" : "ies") + ".", "ok");
+    render(); setDirty(true);
+  });
+  ["sort", "group", "filter"].forEach(function (i) { $(i).addEventListener("input", render); });
+  $("resortBtn").addEventListener("click", render);
+
   // ---------- cards ----------
+  function updateBadge(r) {
+    if (!r.badge) return;
+    var s = score(r.e);
+    r.badge.textContent = s.pct + "%"; r.badge.style.color = pctColor(s.pct);
+    r.badge.title = s.missing.length ? "Missing: " + s.missing.join(", ") : "All info present";
+    if (r.missEl) r.missEl.textContent = s.missing.length ? "Missing: " + s.missing.join(", ") : "";
+    summary();
+  }
+  function summary() {
+    if (!rows.length) { $("summary").textContent = ""; return; }
+    var sum = 0, full = 0;
+    rows.forEach(function (r) { var p = score(r.e).pct; sum += p; if (p === 100) full++; });
+    var avg = Math.round(sum / rows.length);
+    var s = $("summary"); s.textContent = "";
+    s.appendChild(document.createTextNode("Info completeness: average "));
+    s.appendChild(el("b", { text: avg + "%", style: "color:" + pctColor(avg) }));
+    s.appendChild(document.createTextNode(" · " + full + " of " + rows.length + " complete. The % counts source URL, author, author link, category, FW min, FW max, hardware tag and note."));
+  }
   function field(r, key, label, type, opts) {
     var wrap = el("div", { class: opts && opts.full ? "full" : "" });
     wrap.appendChild(el("label", { text: label }));
     var cur = r.e[key], input;
     if (type === "select") {
-      input = el("select"); (opts.list).forEach(function (o) { input.appendChild(el("option", { value: o, text: o || "—" })); });
-      input.value = cur == null ? "" : cur;
-      if (input.value !== (cur == null ? "" : cur)) { input.appendChild(el("option", { value: cur, text: cur })); input.value = cur; }
+      input = el("select");
+      opts.list.forEach(function (o) { var v = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; input.appendChild(el("option", { value: v, text: t })); });
+      var want = cur == null ? "" : String(cur);
+      if (!Array.prototype.some.call(input.options, function (o) { return o.value === want; })) input.appendChild(el("option", { value: want, text: want }));
+      input.value = want;
     } else { input = el("input", { type: type || "text" }); input.value = cur == null ? "" : cur; }
     input.addEventListener("input", function () {
       var v = input.value;
       if (key === "port") v = v === "" ? null : (isNaN(+v) ? v : +v);
       else if (key === "fw_min" || key === "fw_max" || key === "backup_url") v = v === "" ? null : v;
-      r.e[key] = v; setDirty(true);
+      r.e[key] = v; setDirty(true); updateBadge(r);
     });
     wrap.appendChild(input); return wrap;
   }
-  function render() {
-    var q = $("filter").value.trim().toLowerCase(), box = $("cards"); box.textContent = "";
-    var shown = rows.filter(function (r) { return !q || (r.id + " " + r.variant + " " + (r.e.display_name || "") + " " + (r.e.author || "")).toLowerCase().indexOf(q) >= 0; });
-    if (!shown.length) box.appendChild(el("div", { class: "hint", text: rows.length ? "No entries match the filter." : "Empty. Add repos above, open a .json, or load the example list." }));
-    shown.forEach(function (r) {
-      var src = /^https?:\/\//.test(r.e.source_repo || "") ? el("a", { href: r.e.source_repo, target: "_blank", rel: "noopener", text: r.e.source_repo }) : el("span", { text: r.e.source_repo || "no source set" });
-      var card = el("div", { class: "card" }, [
-        el("h3", {}, [el("span", { text: r.e.display_name || r.id }), el("small", { text: r.id + " / " + r.variant })]),
-        el("div", { class: "src" }, [src]),
-        el("div", { class: "g" }, [
-          field(r, "display_name", "Name", "text", { full: true }),
-          field(r, "category", "Category", "select", { list: CATS }),
-          field(r, "channel", "Channel", "select", { list: CH }),
-          field(r, "fw_min", "FW min"), field(r, "fw_max", "FW max"),
-          field(r, "hw_target", "Hardware (P5 / P5P / P5U)", "select", { list: HW }),
-          field(r, "platform", "Platform", "select", { list: PLAT }),
-          field(r, "asset_pattern", "Asset pattern (e.g. name-*.elf)", "text", { full: true }),
-          field(r, "port", "Port"),
-          field(r, "tag_pattern", "Tag pattern"),
-          field(r, "note", "Note", "text", { full: true })
-        ])
-      ]);
-      var prot = el("input", { type: "checkbox" }); prot.checked = !!r.e.protected_fallback;
-      prot.addEventListener("change", function () { r.e.protected_fallback = prot.checked; setDirty(true); });
-      card.appendChild(el("div", { class: "row" }, [
-        el("label", { class: "hint", style: "margin:0;display:flex;gap:6px;align-items:center" }, [prot, el("span", { text: "keep old builds forever" })]),
-        el("button", { class: "del", style: "margin-left:auto", text: "Remove", on: { click: function () {
-          rows = rows.filter(function (x) { return x !== r; }); render(); setDirty(true); } } })
-      ]));
-      if (r.flags && r.flags.length) card.appendChild(el("div", { class: "flag warn", text: "⚠ " + r.flags.join(" · ") }));
-      box.appendChild(card);
-    });
-    setDirty(dirty);
+  function buildCard(r) {
+    var s = score(r.e);
+    var src = isUrl(r.e.source_repo) ? el("a", { href: r.e.source_repo, target: "_blank", rel: "noopener", text: r.e.source_repo }) : el("span", { text: r.e.source_repo || "no source set" });
+    var cb = el("input", { type: "checkbox", title: "Select for bulk changes" }); cb.checked = !!r.sel;
+    r.badge = el("span", { class: "pct" }); r.missEl = el("div", { class: "miss" });
+    var card = el("div", { class: "card" + (r.sel ? " sel" : "") }, [
+      el("h3", {}, [cb, el("span", { class: "nm", text: nm(r) }), el("small", { text: r.id + " / " + r.variant }), r.badge]),
+      el("div", { class: "src" }, [src]),
+      el("div", { class: "g" }, [
+        field(r, "display_name", "Name", "text", { full: true }),
+        field(r, "category", "Category", "select", { list: CATS }),
+        field(r, "channel", "Channel", "select", { list: CH }),
+        field(r, "fw_min", "FW min"), field(r, "fw_max", "FW max"),
+        field(r, "hw_target", "Hardware tag", "select", { list: HW }),
+        field(r, "platform", "Platform", "select", { list: PLAT }),
+        field(r, "author", "Author"), field(r, "author_url", "Author link"),
+        field(r, "asset_pattern", "Asset pattern (e.g. name-*.elf)", "text", { full: true }),
+        field(r, "port", "Port"),
+        field(r, "tag_pattern", "Tag pattern"),
+        field(r, "direct_url", "Direct file URL (not a GitHub release)", "text", { full: true }),
+        field(r, "version", "Version (needed with a direct URL)"),
+        field(r, "note", "Note", "text", { full: true })
+      ])
+    ]);
+    cb.addEventListener("change", function () { r.sel = cb.checked; card.className = "card" + (r.sel ? " sel" : ""); selInfo(); });
+    var prot = el("input", { type: "checkbox" }); prot.checked = !!r.e.protected_fallback;
+    prot.addEventListener("change", function () { r.e.protected_fallback = prot.checked; setDirty(true); });
+    card.appendChild(r.missEl);
+    card.appendChild(el("div", { class: "row" }, [
+      el("label", { class: "hint", style: "margin:0;display:flex;gap:6px;align-items:center" }, [prot, el("span", { text: "keep old builds forever" })]),
+      el("button", { class: "del", style: "margin-left:auto", text: "Remove", on: { click: function () {
+        rows = rows.filter(function (x) { return x !== r; }); render(); setDirty(true); } } })
+    ]));
+    if (r.flags && r.flags.length) card.appendChild(el("div", { class: "flag warn", text: "⚠ " + r.flags.join(" · ") }));
+    r.badge.style.color = pctColor(s.pct); r.badge.textContent = s.pct + "%";
+    r.badge.title = s.missing.length ? "Missing: " + s.missing.join(", ") : "All info present";
+    r.missEl.textContent = s.missing.length ? "Missing: " + s.missing.join(", ") : "";
+    return card;
   }
-  $("filter").addEventListener("input", render);
+  function render() {
+    var box = $("cards"); box.textContent = "";
+    var shown = rows.filter(matches).sort(SORTS[$("sort").value] || byName);
+    var mode = $("group").value;
+    if (!shown.length) box.appendChild(el("div", { class: "hint", text: rows.length ? "No entries match the filters." : "Empty. Add repos above, open a .json, or load the example list." }));
+    if (mode === "none") {
+      var grid = el("div", { class: "grid" }); shown.forEach(function (r) { grid.appendChild(buildCard(r)); }); box.appendChild(grid);
+    } else {
+      var groups = {};
+      shown.forEach(function (r) { var k = groupKey(mode, r); (groups[k] = groups[k] || []).push(r); });
+      groupOrder(mode, Object.keys(groups)).forEach(function (k) {
+        var list = groups[k], avg = Math.round(list.reduce(function (a, r) { return a + score(r.e).pct; }, 0) / list.length);
+        box.appendChild(el("div", { class: "grp", text: k + " — " + list.length + " entr" + (list.length === 1 ? "y" : "ies") + " · average info " + avg + "%" }));
+        var g = el("div", { class: "grid" }); list.forEach(function (r) { g.appendChild(buildCard(r)); }); box.appendChild(g);
+      });
+    }
+    summary(); selInfo(); setDirty(dirty);
+  }
 
   // ---------- file I/O ----------
   function readJsonText(text) { try { loadRegistry(JSON.parse(text)); status("Loaded " + rows.length + " entries.", "ok"); } catch (e) { status("Could not load: " + e.message, "err"); } }
@@ -290,9 +520,10 @@ button:disabled{opacity:.45;cursor:default}
   });
   function jsonText() { return JSON.stringify(toRegistry(), null, 2) + "\n"; }
   $("dlBtn").addEventListener("click", function () {
+    var named = $("storeName").value.trim() !== "";
     var a = el("a", { href: URL.createObjectURL(new Blob([jsonText()], { type: "application/json" })), download: "payload_registry.json" });
     document.body.appendChild(a); a.click(); a.remove(); setDirty(false);
-    status("Downloaded. Upload it to configs/ in your repo (replace payload_registry.json).", "ok");
+    status("Downloaded. Upload it to configs/ in your repo (replace payload_registry.json)." + (named ? "" : "\nNo store name typed, so \"My PLUZ5 Store\" was used. Type yours above and download again."), named ? "ok" : "warn");
   });
   $("saveBtn").addEventListener("click", function () {
     if (!fileHandle) return;
@@ -304,6 +535,7 @@ button:disabled{opacity:.45;cursor:default}
     if (rows.length && !confirm("Remove all " + rows.length + " entries from this page? (Your repo is not touched.)")) return;
     rows = []; render(); setDirty(true);
   });
+  $("storeName").addEventListener("input", function () { setDirty(true); });
   window.addEventListener("beforeunload", function (e) { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
 
   // ---------- PS5 links ----------
@@ -324,7 +556,7 @@ button:disabled{opacity:.45;cursor:default}
   ["owner", "repo", "branch"].forEach(function (i) { $(i).addEventListener("input", links); });
   var hm = location.hostname.match(/^([^.]+)\.github\.io$/i), seg = location.pathname.split("/").filter(Boolean)[0];
   if (hm) { $("owner").value = hm[1]; if (seg && !/\.html$/.test(seg)) $("repo").value = seg; }
-  links(); render();
+  buildChips(); links(); render();
 })();
 </script>
 </body>

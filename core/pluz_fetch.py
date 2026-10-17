@@ -107,7 +107,7 @@ def pick_assets(assets: list, pattern: str | None, exts: set):
     return zips, True
 
 
-def resolve_source(label, asset, rel, version, filename, ctx, log, stats, apply):
+def resolve_source(label, asset, rel, version, filename, ctx, log, stats, apply, direct=False):
     """SOURCE mode: record where the asset lives upstream (no file is stored here).
     The SHA-256 comes from GitHub's own asset digest; if GitHub has none we download
     the asset once into a temp file just to hash it, and never keep it."""
@@ -116,7 +116,8 @@ def resolve_source(label, asset, rel, version, filename, ctx, log, stats, apply)
     digest = asset.get("digest") or ""
     if digest.startswith("sha256:") and len(digest) == 71:
         sha = digest[7:].lower()
-    elif prev.get("url") == asset["browser_download_url"] and prev.get("size") == asset.get("size") and prev.get("sha256"):
+    elif (not direct and prev.get("url") == asset["browser_download_url"]
+          and prev.get("size") == asset.get("size") and prev.get("sha256")):
         sha = prev["sha256"]
     elif asset.get("size", 0) > MAX_BYTES:
         stats["skipped"] += 1
@@ -136,6 +137,12 @@ def resolve_source(label, asset, rel, version, filename, ctx, log, stats, apply)
                 if prev:
                     ctx["resolved"][label] = prev
                 log.line(f"[ERROR] {label}: could not hash asset ({e})")
+                return
+            with tmp.open("rb") as fh:
+                head = fh.read(64).lstrip().lower()
+            if direct and (head.startswith(b"<!doctype") or head.startswith(b"<html")):
+                stats["errors"] += 1
+                log.line(f"[REJECTED] {label}: {asset['name']} is a web page, not a payload (wrong direct_url?)")
                 return
             if asset["name"].lower().endswith(".elf"):
                 with tmp.open("rb") as fh:
@@ -169,38 +176,49 @@ def process(kind, identity, variant, reg, registry, exts, outdir, token, cache, 
         return
     if ctx["mode"] == "source":
         ctx["resolved"].pop(label, None)
-    m = GH_RE.match(str(reg.get("source_repo") or ""))
-    if not m:
-        stats["skipped"] += 1
-        log.line(f"[SKIP] {label}: source_repo is not a plain GitHub repo URL")
-        return
-    owner, repo = m.group(1), m.group(2)
-    key = f"{owner}/{repo}"
-    if key not in cache:
-        try:
-            cache[key] = http_json(f"https://api.github.com/repos/{key}/releases?per_page=30", token)
-        except (urllib.error.URLError, ValueError, OSError) as e:
-            cache[key] = None
-            log.line(f"[WARN] {key}: could not read releases ({e})")
-    releases = cache[key]
-    if releases is None:
-        stats["errors"] += 1
-        if ctx["mode"] == "source" and label in ctx["prev"]:
-            ctx["resolved"][label] = ctx["prev"][label]   # transient error: keep what we had
-        return
-    rel = pick_release(releases, reg.get("channel", "stable"), reg.get("tag_pattern"))
-    if rel is None:
-        stats["skipped"] += 1
-        log.line(f"[SKIP] {label}: no '{reg.get('channel', 'stable')}' release in {key} (add tag_pattern to the registry if tags don't say alpha/beta)")
-        log.line(recent_hint(releases))
-        return
-    cands, from_zip = pick_assets(rel.get("assets", []), reg.get("asset_pattern"), exts)
-    if len(cands) != 1:
-        stats["skipped"] += 1
-        found = ", ".join(a["name"] for a in cands) or "none"
-        log.line(f"[SKIP] {label}: {len(cands)} candidate assets ({found}) -- add asset_pattern to the registry")
-        log.line(recent_hint(releases))
-        return
+    direct = reg.get("direct_url")
+    if direct:
+        # A file that is not a GitHub release (e.g. a project web page). You must say its version.
+        if not (isinstance(direct, str) and direct.startswith("https://") and reg.get("version")):
+            stats["skipped"] += 1
+            log.line(f"[SKIP] {label}: direct_url needs an https:// address AND a version field")
+            return
+        rel = {"tag_name": str(reg["version"])}
+        asset = {"name": direct.rsplit("/", 1)[-1].split("?")[0], "browser_download_url": direct, "size": 0}
+        cands, from_zip, releases = [asset], False, []
+    else:
+        m = GH_RE.match(str(reg.get("source_repo") or ""))
+        if not m:
+            stats["skipped"] += 1
+            log.line(f"[SKIP] {label}: source_repo is not a plain GitHub repo URL")
+            return
+        owner, repo = m.group(1), m.group(2)
+        key = f"{owner}/{repo}"
+        if key not in cache:
+            try:
+                cache[key] = http_json(f"https://api.github.com/repos/{key}/releases?per_page=30", token)
+            except (urllib.error.URLError, ValueError, OSError) as e:
+                cache[key] = None
+                log.line(f"[WARN] {key}: could not read releases ({e})")
+        releases = cache[key]
+        if releases is None:
+            stats["errors"] += 1
+            if ctx["mode"] == "source" and label in ctx["prev"]:
+                ctx["resolved"][label] = ctx["prev"][label]   # transient error: keep what we had
+            return
+        rel = pick_release(releases, reg.get("channel", "stable"), reg.get("tag_pattern"))
+        if rel is None:
+            stats["skipped"] += 1
+            log.line(f"[SKIP] {label}: no '{reg.get('channel', 'stable')}' release in {key} (add tag_pattern to the registry if tags don't say alpha/beta)")
+            log.line(recent_hint(releases))
+            return
+        cands, from_zip = pick_assets(rel.get("assets", []), reg.get("asset_pattern"), exts)
+        if len(cands) != 1:
+            stats["skipped"] += 1
+            found = ", ".join(a["name"] for a in cands) or "none"
+            log.line(f"[SKIP] {label}: {len(cands)} candidate assets ({found}) -- add asset_pattern to the registry")
+            log.line(recent_hint(releases))
+            return
     asset = cands[0]
     version = clean_version(rel["tag_name"])
     if not version:
@@ -226,7 +244,7 @@ def process(kind, identity, variant, reg, registry, exts, outdir, token, cache, 
             stats["skipped"] += 1
             log.line(f"[SKIP] {label}: only a .zip asset ({asset['name']}) -- source mode needs a direct .elf/.bin; use mode 'hosted' or add asset_pattern")
             return
-        resolve_source(label, asset, rel, version, filename, ctx, log, stats, apply)
+        resolve_source(label, asset, rel, version, filename, ctx, log, stats, apply, direct=bool(direct))
         return
     existing = [f for f in (outdir.iterdir() if outdir.exists() else [])
                 if (pf := parse_filename_raw(f.name)) and pf["name_part"] == base and pf["version"] == version]
@@ -321,6 +339,14 @@ def main(argv=None):
                 for variant, reg in entry.get("variants", {}).items():
                     process(kind, identity, variant, reg, registry, exts, outdir,
                             token, cache, args.apply, log, stats, ctx)
+        if mode == "source":
+            seen = {}
+            for k, rec in sorted(ctx["resolved"].items()):
+                seen.setdefault(rec["url"], []).append(k)
+            for url_, ks in seen.items():
+                if len(ks) > 1:
+                    log.line(f"[WARN] {' and '.join(ks)} point to the same file ({url_.rsplit('/', 1)[-1]}) -- "
+                             f"keep one, or set fetch:false on the others")
         if mode == "source" and args.apply:
             body = json.dumps(dict(sorted(ctx["resolved"].items())), indent=2) + "\n"
             rp.parent.mkdir(parents=True, exist_ok=True)

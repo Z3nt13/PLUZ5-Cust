@@ -94,6 +94,22 @@ is re-pointed (and rebased onto that repo) automatically. The folder is never ti
 | AllStar says `Repository not found` | The repo name in `.env` (`GH_USER` / `GH_REPO`) is wrong or the repo does not exist. Fix `.env`; the script now points git at whatever `.env` says |
 | pldmgr shows nothing | Open your raw link in a browser. 404 = wrong name/branch; empty list = see row above |
 
+## Registry fields (each card in the builder)
+| Field | Meaning |
+|---|---|
+| Channel | `stable` = newest normal release; `beta` / `alpha` = newest pre-release whose tag or name says so |
+| Asset pattern | picks one file when a release has several, e.g. `name-*.elf` |
+| Tag pattern | picks a release by tag, e.g. `v0.1.*` (use it when pre-releases are not marked as such) |
+| Direct file URL + Version | for files that are not GitHub releases (a project web page); you type the version |
+| `fetch: false` (edit the json) | keep the entry but never fetch it |
+
+## Builder extras
+- **Store name** (top of section 2) is saved as `store_name` in the json and becomes the manifest name pldmgr shows. `powered_by` is added at the end of the json.
+- **Info %** per card = share of: source URL, author, author link, category, FW min, FW max, hardware tag, note. Sort or group by it to find entries that need more info.
+- **Sort / group / filter**: name A-Z / Z-A (0-9 first), author, info %, source URL yes/no, category; platform and hardware chips are multi-select.
+- **Bulk edit**: tick cards (or "Select shown"), choose hardware / platform / category, Apply.
+- **Hardware tags**: `P5` = regular/slim PS5 only, `P5P` = PS5 Pro, `P5U` = universal (both). Blank = not stated.
+
 ## Layout
 ```
 .github/workflows/update.yml   daily + on change + manual

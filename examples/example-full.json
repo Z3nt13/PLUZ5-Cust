@@ -31,7 +31,9 @@
           "fw_max": "11.40",
           "port": null,
           "protected_fallback": true,
-          "note": "No expiry timer. More stable on FW 11.40 than current EchoStretch beta. Permanent fallback. Exact upstream path: luasauce/payloads/etaHEN-2.6B.bin -- correction confirmed via direct link, not guessed."
+          "note": "No expiry timer. More stable on FW 11.40 than current EchoStretch beta. Permanent fallback. Exact upstream path: luasauce/payloads/etaHEN-2.6B.bin -- correction confirmed via direct link, not guessed. Not a GitHub release: fetched from the project web page (direct_url, version typed by hand). Unverified address: check the fetch log.",
+          "direct_url": "https://zecoxao.github.io/luasauce/payloads/etaHEN-2.6B.bin",
+          "version": "2.6B"
         }
       }
     },
@@ -149,7 +151,8 @@
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "unset -- fill in from release notes"
+          "note": "unset -- fill in from release notes No separate source known: same repo as the default entry.",
+          "fetch": false
         }
       }
     },
@@ -320,12 +323,13 @@
           "author_url": "https://github.com/ItsBlurf",
           "backup_url": null,
           "category": "System Utility",
-          "channel": "beta",
+          "channel": "stable",
           "fw_min": null,
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
+          "note": "sibling tool -- see docs/rename-map.md",
+          "asset_pattern": "PoorDS4rc*.elf"
         }
       }
     },
@@ -338,12 +342,13 @@
           "author_url": "https://github.com/ItsBlurf",
           "backup_url": null,
           "category": "System Utility",
-          "channel": "beta",
+          "channel": "stable",
           "fw_min": null,
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
+          "note": "sibling tool -- see docs/rename-map.md",
+          "asset_pattern": "PoorDS4-status.elf"
         }
       }
     },
@@ -356,12 +361,13 @@
           "author_url": "https://github.com/ItsBlurf",
           "backup_url": null,
           "category": "System Utility",
-          "channel": "beta",
+          "channel": "stable",
           "fw_min": null,
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
+          "note": "sibling tool -- see docs/rename-map.md",
+          "asset_pattern": "PoorDS4-stop.elf"
         }
       }
     },
@@ -770,7 +776,8 @@
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "PS5 payload updater/autoloader -- downloads from configured GitHub releases and writes autoload.txt."
+          "note": "PS5 payload updater/autoloader -- downloads from configured GitHub releases and writes autoload.txt. Same repo as the ChronicLoader entry; kept for old file names.",
+          "fetch": false
         }
       }
     },
@@ -820,7 +827,8 @@
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "Unified exploit autoloader: umtx2 (FW 1.00-5.50), slopkit (9.00-12.00), p2jb (12.02-12.70). Installs a homescreen app for offline autoloading."
+          "note": "Unified exploit autoloader: umtx2 (FW 1.00-5.50), slopkit (9.00-12.00), p2jb (12.02-12.70). Installs a homescreen app for offline autoloading. Same file as the ps5-webkit-autoloader entry -- kept only so old file names still resolve.",
+          "fetch": false
         },
         "host": {
           "display_name": "ps5-webkit-autoloader (PC host)",
@@ -834,7 +842,8 @@
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "Unified exploit autoloader: umtx2 (FW 1.00-5.50), slopkit (9.00-12.00), p2jb (12.02-12.70). Installs a homescreen app for offline autoloading. This variant is the PC-side host companion (.py/.exe), not a PS5 payload."
+          "note": "Unified exploit autoloader: umtx2 (FW 1.00-5.50), slopkit (9.00-12.00), p2jb (12.02-12.70). Installs a homescreen app for offline autoloading. This variant is the PC-side host companion (.py/.exe), not a PS5 payload. PC-side tool (.exe/.py), not a console payload.",
+          "fetch": false
         }
       }
     },
