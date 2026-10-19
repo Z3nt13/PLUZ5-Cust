@@ -73,6 +73,7 @@ run_step "[1/5] pluz-check"    "$PY" core/pluz_check.py
 run_step "[2/5] pluz-fetch"    "$PY" core/pluz_fetch.py --apply
 run_step "[3/5] pluz-update"   "$PY" core/pluz_update.py
 run_step "[4/5] pluz-validate" "$PY" core/pluz_validate.py
+run_step "[4b/5] pluz-infos" "$PY" core/pluz_infos.py
 
 echo; echo "==================== [5/5] git add / commit / push ===================="
 [ -n "$GHAUTH" ] || [ "${PLUZ_ALLOW_PROMPT:-0}" = "1" ] \

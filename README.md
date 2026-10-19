@@ -1,126 +1,141 @@
 # PLUZ5-Cust
 
-Your own PS5 payload list, kept up to date by GitHub. **No payloads are shipped** --
-you pick the repos, GitHub Actions checks them every day and writes a manifest that
+Your own PS5 payload store, kept fresh by GitHub. **No payloads are shipped.** You pick the sources,
+GitHub Actions checks them daily and writes a manifest that
 [pldmgr](https://github.com/itsPLK/ps5-payload-manager) on your PS5 reads.
 
 ```
- builder.html ─► payload_registry.json ─► upload to configs/ ─► Actions: fetch → build → validate → commit
-  (pick repos)                                                         │
-                                         pldmgr "custom repository" ◄──┘  raw link to manifests/PLUZ-ps5-Source.json
+builder.html ─► payload_registry.json ─► configs/ ─► Actions (fetch, build, validate) ─► manifests/PLUZ-ps5-Source.json ─► pldmgr
 ```
 
----
-## Quick start (about 10 minutes, browser only)
+## 1 · Get your copy (10 min, browser only)
 
-**1. Make your copy.** On this repo click **Use this template → Create a new repository**.
-Name it anything (examples below use `PLUZ5Test`), choose **Public** (free GitHub Pages needs public), create.
+| # | Do this | Where |
+|---|---|---|
+| 1 | **Use this template → Create a new repository** (Public) | this repo |
+| 2 | **Settings → Actions → General → Workflow permissions → Read and write → Save** | your repo |
+| 3 | **Settings → Pages → Source: Deploy from a branch → Branch `main` → `/ (root)` → Save**. Wait for the green "site is live" box (1-3 min) | your repo |
 
-**2. Let the workflow save its results.** In *your* repo: **Settings → Actions → General →
-Workflow permissions → Read and write permissions → Save.**
+## 2 · Build your list
 
-**3. Turn on your web page.** **Settings → Pages.** Under *Build and deployment* set **Source: Deploy from a branch**,
-then set the **Branch** dropdown to `main` (it starts on "None"), pick **/ (root)** and press **Save**.
-The page is ready when Settings → Pages shows a green box "Your site is live at ..." (1-3 minutes; the
-Actions tab shows a "pages build and deployment" run). Your address: `https://<your-name>.github.io/<your-repo>/`
+Open `https://<you>.github.io/<repo>/web/builder.html`
 
-**4. Build your list.** Open `https://<your-name>.github.io/<your-repo>/web/builder.html`
-- paste repo URLs (one per line) → **Add**, or press **Load example list** to start from a full list;
-- set Category, FW min/max and Hardware (P5 / P5P / P5U) on each card, fix any ⚠ notes;
-- press **Download payload_registry.json**.
+1. Type your **store name** (shown in pldmgr).
+2. Paste GitHub repo URLs, one per line → **Add**. Or **Load example list** for a ready-made start.
+3. Tidy the cards: category, FW min/max, hardware tag. Use the **Info %** badge to find thin entries; sort by it.
+4. **Download payload_registry.json**.
 
-**5. Put it in your repo.** In your repo open the `configs` folder → **Add file → Upload files** →
-drop `payload_registry.json` (same name replaces the old one) → **Commit changes**.
-(One file is fine in the web uploader. Many files or hidden folders are not -- see "From a PC" below.)
+## 3 · Publish it
 
-**6. Run it once.** **Actions** tab → **PLUZ5 Update** → **Run workflow** → green tick after ~1 minute.
-(Afterwards it runs by itself every day at 03:17 UTC and whenever you change `configs/`.)
+1. In your repo open `configs/` → **Add file → Upload files** → drop `payload_registry.json` → **Commit**.
+2. **Actions → PLUZ5 Update → Run workflow.** Green tick in about a minute. (Then it runs daily and on every change.)
+3. Check `manifests/PLUZ-ps5-Source.json` exists. `[SKIP]` lines in the log say what to fix (see Troubleshooting).
 
-**7. Check the result.** Your repo now has `manifests/PLUZ-ps5-Source.json` with your payloads.
-Open the run's log if some entries show `[SKIP]` -- it prints why and what to set (see Troubleshooting).
+## 4 · Use it on the PS5
 
-**8. Add it to the PS5.** In pldmgr add a custom repository with this link
-(replace the three parts; open it in a browser first, you should see JSON):
+pldmgr → add a custom repository (open the link in a browser first; you should see JSON):
+
 ```
-https://raw.githubusercontent.com/<your-name>/<your-repo>/main/manifests/PLUZ-ps5-Source.json
+https://raw.githubusercontent.com/<you>/<repo>/main/manifests/PLUZ-ps5-Source.json
 ```
 
-**Changing your list later:** open the builder → fill your user + repo in section 3 → **Load from my repo** →
-edit → **Download** → upload to `configs/` again (steps 4-5). The workflow runs automatically.
+**Edit later:** builder → section 3 fill user + repo → **Load from my repo** → change → Download → upload to `configs/` again.
 
----
-## Builder without GitHub Pages
-Open `web/builder.html` from your unzipped folder (double-click). Adding repos and **Download** work offline-style;
-for the example list use **Open .json...** and choose `examples/example-full.json`.
+## 5 · Add your own .elf / .bin
 
----
-## Modes (`mode` in `configs/settings.json`, or `PLUZ_MODE` in `.env`)
+For a file that is not on GitHub (your build, a friend's file, a download).
+
+1. Builder → **Add your own .elf / .bin** → type a name → **Add personal file**. Download and upload the json as in step 3.
+2. Name your file `<name>_v<version>.elf`, for example `My-Tool_v1.0.elf` (`.bin` works too).
+3. Put it in the repo's `payloads/` folder (web uploader is fine for one file; many files: use "From a PC").
+4. Run the workflow. Your file is listed with its checksum and served from your repo.
+
+Notes: a personal file **beats** an upstream copy with the same name. New version = upload `My-Tool_v1.1.elf`.
+Only share files you may redistribute.
+
+## Library + Store (keep notes on every repo you find)
+
+`web/library.html` keeps two lists side by side:
+
+| | File | Used by |
+|---|---|---|
+| 📚 **Library** | `data/PLUZ5-infos.json` (`.md` and `.xlsx` are built from it) | you: notes, author, variant, tags |
+| 🏪 **Store** | `configs/payload_registry.json` | pldmgr: only what the PS5 downloads |
+
+1. Add a repo link (it lands in the Library). Tick blocks, or **drag** them from Library to Store (and back to remove).
+2. Every bulk action shows a count and a list before it runs. **Undo** works for the session. Nothing is hard-deleted: "Mark removed" is restorable.
+3. **Copy block** (text), **Copy JSON** or **Copy Store JSON** on any selection.
+4. Download both files, upload them to `data/` and `configs/`, run the workflow.
+
+Variant = who made *that build* (`org` = original). In the Store `org` is written as `default`, so no file renames are needed.
+
+## Other source types
+
+| Need | Set on the card |
+|---|---|
+| Several files in a release | **Asset pattern**, e.g. `name-*.elf` |
+| Pre-releases not tagged beta/alpha | **Tag pattern**, e.g. `v0.1.*` |
+| File on a web page, not a release | **Direct file URL** + **Version** |
+| Keep it listed but never fetch | `"fetch": false` (edit json) |
+
+## P5 · P5P · P5U (hardware tag)
+
+`P5` regular/slim PS5 only · `P5P` PS5 Pro · `P5U` universal (both) · blank = not stated (never guessed).
+It describes the **console model**; FW min/max describes the **firmware**.
+
+## Modes
+
 | | **source** (default) | hosted |
 |---|---|---|
-| Your repo holds | only json (`manifests/resolved.json` remembers each upstream file) | the binaries in `payloads/` |
+| Repo holds | json only | the binaries in `payloads/` |
 | pldmgr downloads from | the original release | your repo |
-| Old builds | latest only | up to 3 per payload; `keep old builds forever` honoured |
-| Zip-only releases | skipped (need a direct .elf/.bin) | extracted |
-| Size / licences | nothing to worry about | repo grows; you redistribute the files |
+| Old builds | latest | up to 3 per payload |
+| Zip-only releases | skipped | extracted |
 
----
-## From a PC (recommended for the maintainer; the web uploader drops hidden files)
-Uses only your portable tools. Nothing personal is stored in the scripts -- only in `.env`.
-1. Create an **empty** repo (no README). Tick **Template repository** if others should copy it.
-2. Unzip this project anywhere (show hidden files).
-3. Open `.env`: set `GH_USER`, `GH_REPO`, the portable folders (`PLUZ_PY_DIR`, `PLUZ_GIT_DIR`), and paste a
-   **classic** token (`repo` + `workflow` scopes) after `GH_TOKEN=`. `.env` is gitignored: never uploaded.
-4. Double-click **`PLUZ-AllStar.bat`** (Arch/Linux: `./pluz-allstar.sh`). It links the folder to the repo, fetches,
-   builds, validates, commits and pushes. Run it any time.
-5. Then do steps 2, 3 and 6 above (permissions, Pages, first workflow run).
+Set `mode` in `configs/settings.json` or `PLUZ_MODE` in `.env`. In both modes, files you put in `payloads/` are used.
 
-Which repo you push to is decided by `GH_USER` / `GH_REPO` in `.env` only. Change them and run AllStar again and the folder
-is re-pointed (and rebased onto that repo) automatically. The folder is never tied to the old repo.
+## From a PC (the web uploader drops hidden files and big batches)
 
-`PLUZ-AllStar.bat debug` saves a full log (token hidden) in `logs\`. Stuck GitHub logins: `PLUZ-GHclean.bat`.
+1. Create an **empty** repo. 2. Unzip this project. 3. Edit `.env`: `GH_USER`, `GH_REPO`, portable tool folders, and a **classic** token (`repo` + `workflow`); `.env` is never uploaded.
+4. Run **`PLUZ-AllStar.bat`** (Linux: `./pluz-allstar.sh`): links the folder to the repo, fetches, builds, validates, pushes. 5. Do steps 2-3 of section 1 once.
 
----
+`PLUZ-AllStar.bat debug` writes a log (token hidden) to `logs/`. Stuck logins: `PLUZ-GHclean.bat`.
+
 ## Troubleshooting
+
 | You see | Do this |
 |---|---|
-| Workflow red, `403` / `Permission denied` on push | Step 2 (Read and write permissions), then re-run |
-| Builder page is a 404 ("There isn't a GitHub Pages site here") | Pages is not on yet: redo step 3 and make sure the Branch dropdown says `main` and you pressed Save. The repo must be Public. Wait for the green "live" box. Meanwhile you can use the builder offline (below) |
-| `[SKIP] ... N candidate assets` | The release has several files. Set **Asset pattern** (e.g. `name-*.elf`) on that card |
-| `[SKIP] ... no 'beta' release` | Set **Tag pattern** (e.g. `v1.*`) or change Channel; the log line `recent releases:` shows the real tags |
-| `[SKIP] ... only a .zip asset` | Source mode needs a direct .elf/.bin; use hosted mode or pick another asset |
-| `could not read releases (403)` | GitHub rate limit; it clears on its own. Re-run later |
-| Manifest has 0 entries | `configs/payload_registry.json` is still the empty one -- repeat steps 4-5 |
-| Daily runs stopped | GitHub pauses scheduled runs after 60 days without any commit. Press **Run workflow** once to wake it |
-| AllStar says `Repository not found` | The repo name in `.env` (`GH_USER` / `GH_REPO`) is wrong or the repo does not exist. Fix `.env`; the script now points git at whatever `.env` says |
-| pldmgr shows nothing | Open your raw link in a browser. 404 = wrong name/branch; empty list = see row above |
-
-## Registry fields (each card in the builder)
-| Field | Meaning |
-|---|---|
-| Channel | `stable` = newest normal release; `beta` / `alpha` = newest pre-release whose tag or name says so |
-| Asset pattern | picks one file when a release has several, e.g. `name-*.elf` |
-| Tag pattern | picks a release by tag, e.g. `v0.1.*` (use it when pre-releases are not marked as such) |
-| Direct file URL + Version | for files that are not GitHub releases (a project web page); you type the version |
-| `fetch: false` (edit the json) | keep the entry but never fetch it |
-
-## Builder extras
-- **Store name** (top of section 2) is saved as `store_name` in the json and becomes the manifest name pldmgr shows. `powered_by` is added at the end of the json.
-- **Info %** per card = share of: source URL, author, author link, category, FW min, FW max, hardware tag, note. Sort or group by it to find entries that need more info.
-- **Sort / group / filter**: name A-Z / Z-A (0-9 first), author, info %, source URL yes/no, category; platform and hardware chips are multi-select.
-- **Bulk edit**: tick cards (or "Select shown"), choose hardware / platform / category, Apply.
-- **Hardware tags**: `P5` = regular/slim PS5 only, `P5P` = PS5 Pro, `P5U` = universal (both). Blank = not stated.
+| Workflow red, push `403` | Section 1 step 2, re-run |
+| Builder 404 | Pages not live yet: Branch must say `main`, press Save, repo Public. Or open `web/builder.html` from the unzipped folder |
+| `[SKIP] N candidate assets` | Set **Asset pattern** |
+| `[SKIP] no 'beta' release` | Set **Tag pattern** or Channel; the log lists real tags |
+| `[SKIP] only a .zip asset` | Pick another asset, use hosted mode, or unzip and add it as your own file |
+| `[SKIP] does not resolve` | A file in `payloads/` is not named `<name>_v<version>.elf` or has no registry entry |
+| `could not read releases (403)` | GitHub rate limit; re-run later |
+| Manifest has 0 entries | `configs/payload_registry.json` is still the empty one |
+| Daily runs stopped | GitHub pauses idle repos after 60 days: press **Run workflow** once |
+| AllStar: `Repository not found` | Fix `GH_USER` / `GH_REPO` in `.env` |
+| pldmgr shows nothing | Open the raw link in a browser: 404 = wrong name/branch |
 
 ## Layout
+
 ```
-.github/workflows/update.yml   daily + on change + manual
-configs/payload_registry.json  YOUR list (the one file you edit)   categories.json  settings.json
-core/                          engine (plain Python, no installs)
-manifests/                     generated: Source.json, split/, resolved.json (Hosted.json in hosted mode)
-payloads/                      only used in hosted mode
-web/                           builder.html (make/edit your list + your links), catalog.html (browse)
-examples/example-full.json     47-entry starter list
-PLUZ-AllStar.bat / pluz-allstar.sh   full local run          PLUZ-GHclean.bat / pluz-ghclean.sh   clean logins/repo
-pluz.py                        python pluz.py <check|fetch|update|validate|cleanup|dedupe>
+.github/workflows/update.yml    daily + on change + manual
+configs/payload_registry.json   YOUR list (the one file you edit)
+core/                           engine, plain Python
+manifests/                      generated (Source.json, split/, resolved.json)
+payloads/                       your own files (and all files in hosted mode)
+web/                            builder.html, catalog.html
+examples/example-full.json      42-entry starter list
 ```
-Hardware tags: `P5` regular/slim · `P5P` Pro · `P5U` both. Versions come from the release tag; `fw_min`/`fw_max`
-are typed by you, blank means unknown. You are responsible for the licences of anything you host.
+
+## Credits
+
+Built on the work of the PS5 scene. Thank you to **itsPLK** (pldmgr and the webkit autoloader),
+**notmaj0r** (ProsperoMgr, JailbreakStore), **nexgen999** (evoX-CoreOS ideas), **ps5-payload-dev**, **earthonion**,
+**drakmor**, **Nazky**, **zecoxao**, the etaHEN and kstuff developers, and every author whose payloads these lists point to.
+Thanks also to the community members who test, report and share links.
+
+Designed by **Z3nT13**, built together with **Sparkz** (Claude, Anthropic).
+
+*Powered By Z3nT13's PLUZ5*

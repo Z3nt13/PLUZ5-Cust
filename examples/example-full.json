@@ -69,42 +69,6 @@
         }
       }
     },
-    "zftp": {
-      "variants": {
-        "itsPLK": {
-          "display_name": "zftp",
-          "source_repo": "unset -- attribution unconfirmed, do not guess (see docs/rename-map.md)",
-          "author": "unset -- attribution unconfirmed, do not guess",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Network",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": 21,
-          "protected_fallback": false,
-          "note": "Naming/attribution not yet verified -- leave for the future scraper/discovery engine to confirm rather than fixing by hand now."
-        }
-      }
-    },
-    "zhttp": {
-      "variants": {
-        "itsPLK": {
-          "display_name": "zhttp",
-          "source_repo": "unset -- attribution unconfirmed, do not guess",
-          "author": "unset -- attribution unconfirmed, do not guess",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Network",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "Naming/attribution not yet verified -- leave for the future scraper/discovery engine to confirm rather than fixing by hand now."
-        }
-      }
-    },
     "websrv": {
       "variants": {
         "default": {
@@ -185,132 +149,6 @@
           "port": null,
           "protected_fallback": false,
           "note": "unset -- fill in from release notes"
-        }
-      }
-    },
-    "fan-target-70c": {
-      "variants": {
-        "default": {
-          "display_name": "Fan Target 70C",
-          "source_repo": "unset",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "System Utility",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "sibling tool, not a version of fan-target-75c/80c -- see docs/rename-map.md"
-        }
-      }
-    },
-    "fan-target-75c": {
-      "variants": {
-        "default": {
-          "display_name": "Fan Target 75C",
-          "source_repo": "unset",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "System Utility",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
-        }
-      }
-    },
-    "fan-target-80c": {
-      "variants": {
-        "default": {
-          "display_name": "Fan Target 80C",
-          "source_repo": "unset",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "System Utility",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
-        }
-      }
-    },
-    "ps5power-notify": {
-      "variants": {
-        "default": {
-          "display_name": "PS5 Power: Notify (test)",
-          "source_repo": "unset",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "System Utility",
-          "channel": "beta",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
-        }
-      }
-    },
-    "ps5power-poweroff": {
-      "variants": {
-        "default": {
-          "display_name": "PS5 Power: Poweroff",
-          "source_repo": "unset",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "System Utility",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
-        }
-      }
-    },
-    "ps5power-reboot": {
-      "variants": {
-        "default": {
-          "display_name": "PS5 Power: Reboot",
-          "source_repo": "unset",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "System Utility",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
-        }
-      }
-    },
-    "ps5power-suspend": {
-      "variants": {
-        "default": {
-          "display_name": "PS5 Power: Suspend",
-          "source_repo": "unset",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "System Utility",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "sibling tool -- see docs/rename-map.md"
         }
       }
     },
@@ -526,7 +364,7 @@
     "garlic-savemgr": {
       "variants": {
         "default": {
-          "display_name": "Garlic Save Manager",
+          "display_name": "GarlicSaves",
           "source_repo": "https://git.etawen.dev/earthonion/garlic-savemgr",
           "author": "earthonion",
           "author_url": "https://git.etawen.dev/earthonion",
@@ -537,7 +375,8 @@
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "separate tool from garlic-worker, shared prefix only"
+          "note": "separate tool from garlic-worker, shared prefix only | Not on GitHub (Forgejo host): listed only. Add direct_url + version once you have a file link, then remove fetch:false.",
+          "fetch": false
         }
       }
     },
@@ -555,7 +394,8 @@
           "fw_max": null,
           "port": null,
           "protected_fallback": false,
-          "note": "separate tool from garlic-savemgr, shared prefix only"
+          "note": "separate tool from garlic-savemgr, shared prefix only | Not on GitHub (Forgejo host): listed only. Add direct_url + version once you have a file link, then remove fetch:false.",
+          "fetch": false
         }
       }
     },
@@ -635,48 +475,6 @@
     },
     "ftpsrv": {
       "variants": {
-        "default": {
-          "display_name": "ftpsrv",
-          "source_repo": "unset -- not yet confirmed",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Network",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "Un-suffixed builds (v1.15-ng, v1.16-ng-test2) -- source not confirmed which fork these are."
-        },
-        "drakmor": {
-          "display_name": "ftpsrv (drakmor fork)",
-          "source_repo": "unset -- fork of ps5-payload-dev/ftpsrv, exact repo unconfirmed",
-          "author": "drakmor",
-          "author_url": "https://github.com/drakmor",
-          "backup_url": null,
-          "category": "Network",
-          "channel": "beta",
-          "fw_min": null,
-          "fw_max": null,
-          "port": 21,
-          "protected_fallback": false,
-          "note": "Test fork -- confirm exact repo before treating as authoritative."
-        },
-        "autopause": {
-          "display_name": "ftpsrv (autopause)",
-          "source_repo": "unset -- not yet confirmed",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Network",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "Feature-flagged build -- source not confirmed, do not assume same repo as ps5-payload-dev."
-        },
         "ps5-payload": {
           "display_name": "ftpsrv (ps5-payload-dev)",
           "source_repo": "https://github.com/ps5-payload-dev/ftpsrv",
@@ -691,20 +489,6 @@
           "protected_fallback": false,
           "note": "unset -- fill in from release notes",
           "asset_pattern": "ftpsrv-ps5.elf"
-        },
-        "install": {
-          "display_name": "ftpsrv (install)",
-          "source_repo": "unset -- not yet confirmed",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Network",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "unset -- fill in from release notes"
         }
       }
     },
@@ -796,20 +580,6 @@
           "port": null,
           "protected_fallback": false,
           "note": "unset -- fill in from release notes"
-        },
-        "drakmor": {
-          "display_name": "kstuff-lite (drakmor)",
-          "source_repo": "unset -- not yet confirmed",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Kernel",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "Sibling build referenced by kstuff-lite_drakmor_v1.2-dr-test2.elf -- source not confirmed, do not guess."
         }
       }
     },
@@ -880,38 +650,6 @@
           "port": null,
           "protected_fallback": false,
           "note": "PS5 payload updater/autoloader -- checks GitHub releases, manages autoload.txt."
-        }
-      }
-    },
-    "kstuff": {
-      "variants": {
-        "EchoStretch": {
-          "display_name": "kstuff (EchoStretch)",
-          "source_repo": "unset -- not yet confirmed",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Kernel",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "Mainline kstuff by EchoStretch -- only the kstuff-lite repo was confirmed directly, this one wasn't."
-        },
-        "default": {
-          "display_name": "kstuff",
-          "source_repo": "unset -- not yet confirmed",
-          "author": "unset",
-          "author_url": null,
-          "backup_url": null,
-          "category": "Kernel",
-          "channel": "stable",
-          "fw_min": null,
-          "fw_max": null,
-          "port": null,
-          "protected_fallback": false,
-          "note": "Vanilla/original kstuff build referenced by kstuff_v1.09.elf -- source not confirmed."
         }
       }
     },

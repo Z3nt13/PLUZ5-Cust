@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLUZ5 — Library</title>
+<style>
+:root{--bg:#000;--surface:#050b08;--card:#081209;--border:#0e2016;--text:#e2e8f0;--muted:#6b8070;
+  --accent:#00e699;--sub:#00f0ff;--danger:#ff6b6b;--ok:#4ade80;--warn:#facc15;--r:8px;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",sans-serif;line-height:1.4;padding-bottom:20px}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.logo{font-weight:700;color:var(--accent);letter-spacing:.05em;font-size:1.15rem}.logo span{color:var(--sub)}
+header a{color:var(--sub);font-size:.85rem;text-decoration:none}
+main{max-width:1300px;margin:0 auto;padding:16px}
+section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
+h2{font-size:.95rem;color:var(--accent);margin-bottom:8px}
+.hint{color:var(--muted);font-size:.8rem;margin:4px 0 8px}
+input,select,button,textarea{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:6px 10px;font-size:.82rem;font-family:inherit;outline:none}
+input,select{width:auto}input[type=checkbox]{width:auto;padding:0}
+textarea{width:100%;min-height:70px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+button{cursor:pointer}button:hover{border-color:var(--accent)}
+button.pri{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+button.del{color:var(--danger)}
+button:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.grow{flex:1;min-width:150px}
+.lab{font-size:.72rem;color:var(--muted);white-space:nowrap}
+#status{font-size:.82rem;margin-top:8px;white-space:pre-wrap}
+.ok{color:var(--ok)}.err{color:var(--danger)}.warn{color:var(--warn)}
+.cols{display:grid;grid-template-columns:3fr 2fr;gap:12px;align-items:start}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+.col{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;min-height:200px}
+.col.over{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,230,153,.25)}
+.col h3{font-size:.9rem;color:var(--sub);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.col h3 small{color:var(--muted);font-weight:400}
+.list{display:grid;gap:8px;margin-top:8px;max-height:70vh;overflow:auto;padding-right:2px}
+#libList{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.blk{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;cursor:grab;font-size:.8rem}
+.blk.sel{border-color:var(--accent);background:#06140d}
+.blk.gone{opacity:.5}
+.blk .t{display:flex;gap:8px;align-items:center;font-weight:600;font-size:.88rem}
+.blk .t .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.blk .u{color:var(--muted);word-break:break-all;font-size:.72rem;margin:2px 0}
+.blk .u a{color:var(--sub);text-decoration:none}
+.kv{color:var(--muted);font-size:.74rem}.kv b{color:var(--text);font-weight:500}
+.tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.tag{font-size:.66rem;border:1px solid var(--border);border-radius:999px;padding:0 6px;color:var(--muted);cursor:pointer}
+.tag.hit{color:var(--accent);border-color:var(--accent)}
+.badge{font-size:.68rem;border:1px solid currentColor;border-radius:999px;padding:0 7px;white-space:nowrap}
+.yes{color:var(--ok)}.no{color:var(--muted)}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:20;padding:12px}
+.dlg{background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:16px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
+.dlg h4{color:var(--accent);margin-bottom:8px;font-size:.95rem}
+.dlg ul{margin:8px 0 8px 18px;font-size:.82rem}
+.dlg label{display:block;font-size:.72rem;color:var(--muted);margin-top:8px}
+.dlg input,.dlg textarea,.dlg select{width:100%}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:16px 0 28px}
+footer b{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">PLUZ5<span> Library</span></div>
+  <a href="builder.html">Builder</a><a href="catalog.html">Catalog</a>
+  <span class="hint" id="count" style="margin:0 0 0 auto"></span>
+</header>
+<main>
+
+<section>
+  <h2>How this works</h2>
+  <div class="hint"><b>Library</b> = every source you know (<code>data/PLUZ5-infos.json</code>). <b>Store</b> = only what pldmgr serves (<code>configs/payload_registry.json</code>).
+  Tick blocks (or drag them) between the two columns, then download the files and upload them to your repo. This page never writes to your repo.</div>
+  <div class="row" style="margin-top:0">
+    <button id="openLib">Open Library json…</button>
+    <button id="openStore">Open Store json…</button>
+    <button id="loadRepo" title="Reads both files from the repo named below">Load from my repo</button>
+    <input id="owner" placeholder="GitHub user" style="width:140px"><input id="repo" placeholder="repo" style="width:140px"><input id="branch" value="main" style="width:70px">
+    <input type="file" id="fileLib" accept=".json" style="display:none"><input type="file" id="fileStore" accept=".json" style="display:none">
+  </div>
+  <div class="row">
+    <input id="addUrl" class="grow" placeholder="Add a repo: https://github.com/owner/repo (reads name, description, topics)">
+    <button class="pri" id="addBtn">Add to Library</button>
+  </div>
+  <div class="row">
+    <button class="pri" id="dlLib">Download PLUZ5-infos.json</button>
+    <button class="pri" id="dlStore">Download payload_registry.json</button>
+    <button id="dlMd">Download .md</button>
+    <button id="undoBtn" disabled>Undo</button>
+    <span class="hint" style="margin:0">The .xlsx is built by the workflow from the json.</span>
+  </div>
+  <div id="status"></div>
+</section>
+
+<section>
+  <h2>Filters</h2>
+  <div class="row" style="margin-top:0">
+    <input id="fText" class="grow" type="search" placeholder="Search name, url, notes…">
+    <select id="fAuthor"></select><select id="fVariant"></select><select id="fTag"></select><select id="fSection"></select>
+    <select id="fStore"><option value="">Store: any</option><option value="yes">In Store</option><option value="no">Not in Store</option></select>
+    <select id="fSort"><option value="name">Sort: name</option><option value="author">Sort: author</option><option value="section">Sort: section</option></select>
+    <label class="lab"><input type="checkbox" id="fGone"> show removed / hidden</label>
+  </div>
+</section>
+
+<div class="cols">
+  <div class="col" id="libCol">
+    <h3>📚 Library <small id="libInfo"></small></h3>
+    <div class="bar">
+      <button id="lAll">Select all</button><button id="lInv">Invert</button><button id="lNone">Clear</button>
+      <span class="lab" id="lSel">0 selected</span>
+    </div>
+    <div class="bar">
+      <button class="pri" id="toStore">→ Store</button>
+      <button id="cpBlock">Copy block</button><button id="cpJson">Copy JSON</button><button id="cpStore">Copy Store JSON</button>
+      <button id="edit">Edit</button><button id="hide">Hide / unhide</button><button id="gone">Mark removed / restore</button>
+      <button class="del" id="purge">Delete forever…</button>
+    </div>
+    <div class="list" id="libList"></div>
+  </div>
+  <div class="col" id="storeCol">
+    <h3>🏪 Store <small id="storeInfo"></small></h3>
+    <div class="bar">
+      <button id="sAll">Select all</button><button id="sInv">Invert</button><button id="sNone">Clear</button>
+      <span class="lab" id="sSel">0 selected</span>
+    </div>
+    <div class="bar">
+      <button class="del" id="fromStore">Remove from Store</button><button id="cpSJson">Copy JSON</button>
+    </div>
+    <div class="hint">Fine-tune a Store entry (category, FW, patterns) in the <a href="builder.html" style="color:var(--sub)">Builder</a>.</div>
+    <div class="list" id="storeList"></div>
+  </div>
+</div>
+</main>
+<footer>Powered By <b>Z3nT13's PLUZ5</b></footer>
+<script>
+(function () {
+  "use strict";
+  var POWERED = "Powered By Z3nT13's PLUZ5";
+  var lib = { schema_version: 1, comment: "Your Library. Edit with web/library.html.", entries: [] };
+  var store = { schema_version: 6, comment: "Your sources. Build/edit with web/builder.html.", payloads: {} };
+  var selL = {}, selS = {}, undo = [], dirtyL = false, dirtyS = false;
+  var F = { text: "", author: "", variant: "", tag: "", section: "", store: "", sort: "name", gone: false };
+
+  function $(i) { return document.getElementById(i); }
+  function el(tag, props, kids) {
+    var n = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (k) {
+      if (k === "text") n.textContent = props[k]; else if (k === "class") n.className = props[k];
+      else if (k === "on") Object.keys(props.on).forEach(function (ev) { n.addEventListener(ev, props.on[ev]); });
+      else n.setAttribute(k, props[k]);
+    });
+    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
+  }
+  function status(m, k) { var s = $("status"); s.textContent = m; s.className = k || ""; }
+  function safeId(s) { return String(s).replace(/[^A-Za-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "payload"; }
+  function normUrl(u) { return String(u || "").trim().toLowerCase().replace(/(\.git)?\/*$/, ""); }
+  function ownerOf(u) { var m = String(u || "").match(/^https?:\/\/github\.com\/([^\/]+)\//i); return m ? m[1] : ""; }
+  function mkId(name, variant) { return safeId(name) + "-" + safeId(variant || "org"); }
+
+  // ---------- Store helpers ----------
+  function storeRows() {
+    var out = [];
+    Object.keys(store.payloads || {}).forEach(function (id) {
+      var vs = (store.payloads[id] || {}).variants || {};
+      Object.keys(vs).forEach(function (v) { out.push({ key: id + "/" + v, id: id, variant: v, e: vs[v] }); });
+    });
+    return out.sort(function (a, b) { return String(a.e.display_name || a.id).localeCompare(String(b.e.display_name || b.id), undefined, { numeric: true, sensitivity: "base" }); });
+  }
+  function storeUrlSet() {
+    var s = {}; storeRows().forEach(function (r) { var u = normUrl(r.e.source_repo); if (u) s[u] = true; }); return s;
+  }
+  function libUrlSet() {
+    var s = {}; lib.entries.forEach(function (e) { var u = normUrl(e.url); if (u) s[u] = true; }); return s;
+  }
+  var CATMAP = [
+    [["kstuff", "hen", "kernel"], "Kernel"], [["dns", "network", "diagnostic", "ftp"], "Network"],
+    [["file-manager"], "File Management"], [["mount", "shadowmount", "compression", "dumper", "pfs"], "Game Tools"],
+    [["media", "player", "video", "dlna"], "Media"], [["activator", "account", "spoof", "np"], "Activation & Spoof"],
+    [["sdk", "debug", "dev"], "Debug & SDK"], [["menu", "overlay", "fan-control", "theme", "autoload", "loader"], "System Utility"]
+  ];
+  function toStoreEntry(e) {
+    var tags = (e.tags || []).map(function (t) { return t.toLowerCase(); }), cat = "Unknown", hw = "", port = null;
+    CATMAP.some(function (c) { return c[0].some(function (t) { if (tags.indexOf(t) >= 0) { cat = c[1]; return true; } }); });
+    (e.tags || []).forEach(function (t) {
+      if (!hw && /^P5[PU]?$/i.test(t)) hw = t.toUpperCase();
+      var m = t.match(/^port-(\d+)/i); if (port === null && m) port = +m[1];
+    });
+    var variant = (!e.variant || e.variant === "org") ? "default" : safeId(e.variant);
+    var o = { display_name: e.name, source_repo: e.url, author: e.author || ownerOf(e.url),
+      author_url: ownerOf(e.url) ? "https://github.com/" + ownerOf(e.url) : "", backup_url: null, category: cat, channel: "stable",
+      fw_min: null, fw_max: null, port: port, protected_fallback: false, note: String(e.notes || e.desc || "").slice(0, 300) };
+    if (hw) o.hw_target = hw;
+    if (tags.indexOf("ps4") >= 0) o.platform = "ps4/ps5";
+    return { id: safeId(e.name), variant: variant, e: o };
+  }
+
+  // ---------- history ----------
+  function snap() { undo.push(JSON.stringify({ lib: lib, store: store })); if (undo.length > 50) undo.shift(); $("undoBtn").disabled = false; }
+  $("undoBtn").addEventListener("click", function () {
+    if (!undo.length) return;
+    var s = JSON.parse(undo.pop()); lib = s.lib; store = s.store; selL = {}; selS = {};
+    $("undoBtn").disabled = !undo.length; dirtyL = dirtyS = true; render(); status("Undone.", "ok");
+  });
+
+  // ---------- modal ----------
+  function modal(title, body, okText, onOk) {
+    var ov = el("div", { class: "ov" }), ok = el("button", { class: "pri", text: okText || "OK" });
+    function close() { ov.remove(); }
+    ok.addEventListener("click", function () { if (onOk() !== false) close(); });
+    var d = el("div", { class: "dlg" }, [el("h4", { text: title })].concat(body, [
+      el("div", { class: "row" }, [ok, el("button", { text: "Cancel", on: { click: close } })])]));
+    ov.appendChild(d); ov.addEventListener("click", function (ev) { if (ev.target === ov) close(); });
+    document.body.appendChild(ov); return ov;
+  }
+  function listBlock(names, extra) {
+    var ul = el("ul"); names.slice(0, 12).forEach(function (n) { ul.appendChild(el("li", { text: n })); });
+    if (names.length > 12) ul.appendChild(el("li", { text: "…and " + (names.length - 12) + " more" }));
+    return [ul].concat(extra ? [el("div", { class: "hint warn", text: extra })] : []);
+  }
+  function confirmDiff(title, names, extra, okText, run) {
+    modal(title + " (" + names.length + ")", listBlock(names, extra), okText || "Do it", function () { snap(); run(); render(); });
+  }
+
+  // ---------- selection / data ----------
+  function selectedLib() { return lib.entries.filter(function (e) { return selL[e.id]; }); }
+  function selectedStore() { return storeRows().filter(function (r) { return selS[r.key]; }); }
+  function libShown() {
+    var inS = storeUrlSet(), q = F.text.toLowerCase();
+    var list = lib.entries.filter(function (e) {
+      if (!F.gone && (e.removed || e.hidden)) return false;
+      if (F.author && e.author !== F.author) return false;
+      if (F.variant && e.variant !== F.variant) return false;
+      if (F.tag && (e.tags || []).indexOf(F.tag) < 0) return false;
+      if (F.section && e.section !== F.section) return false;
+      var has = !!inS[normUrl(e.url)] && !!e.url;
+      if (F.store === "yes" && !has) return false;
+      if (F.store === "no" && has) return false;
+      if (q && (e.name + " " + (e.url || "") + " " + (e.notes || "") + " " + (e.desc || "") + " " + (e.tags || []).join(" ")).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    var key = F.sort === "author" ? "author" : F.sort === "section" ? "section" : "name";
+    return list.sort(function (a, b) { return String(a[key] || "~").localeCompare(String(b[key] || "~"), undefined, { numeric: true, sensitivity: "base" }) || String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }); });
+  }
+  function storeShown() {
+    var q = F.text.toLowerCase();
+    return storeRows().filter(function (r) { return !q || (r.id + " " + r.variant + " " + (r.e.display_name || "") + " " + (r.e.source_repo || "") + " " + (r.e.author || "")).toLowerCase().indexOf(q) >= 0; });
+  }
+  function fillFilter(id, label, vals) {
+    var s = $(id), cur = s.value; s.textContent = "";
+    s.appendChild(el("option", { value: "", text: label }));
+    vals.forEach(function (v) { s.appendChild(el("option", { value: v, text: v })); });
+    s.value = vals.indexOf(cur) >= 0 ? cur : "";
+  }
+  function uniq(list) { var o = {}; list.forEach(function (v) { if (v) o[v] = 1; }); return Object.keys(o).sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: "base" }); }); }
+  function buildFilters() {
+    fillFilter("fAuthor", "Author: any", uniq(lib.entries.map(function (e) { return e.author; })));
+    fillFilter("fVariant", "Variant: any", uniq(lib.entries.map(function (e) { return e.variant; })));
+    var t = []; lib.entries.forEach(function (e) { t = t.concat(e.tags || []); });
+    fillFilter("fTag", "Tag: any", uniq(t));
+    fillFilter("fSection", "Section: any", uniq(lib.entries.map(function (e) { return e.section; })));
+    F.author = $("fAuthor").value; F.variant = $("fVariant").value; F.tag = $("fTag").value; F.section = $("fSection").value;
+  }
+
+  // ---------- render ----------
+  function dragSetup(node, kind, id) {
+    node.setAttribute("draggable", "true");
+    node.addEventListener("dragstart", function (ev) {
+      ev.dataTransfer.setData("text/plain", kind + ":" + id); ev.dataTransfer.effectAllowed = "move";
+      var sel = kind === "lib" ? selL : selS;
+      if (!sel[id]) { if (kind === "lib") selL = {}; else selS = {}; (kind === "lib" ? selL : selS)[id] = true; }
+    });
+  }
+  function libBlock(e, inS) {
+    var cb = el("input", { type: "checkbox" }); cb.checked = !!selL[e.id];
+    var has = !!e.url && !!inS[normUrl(e.url)];
+    var blk = el("div", { class: "blk" + (selL[e.id] ? " sel" : "") + (e.removed || e.hidden ? " gone" : ""), "data-id": e.id }, [
+      el("div", { class: "t" }, [cb, el("span", { class: "nm", text: e.name + (e.removed ? " (removed)" : e.hidden ? " (hidden)" : "") }),
+        el("span", { class: "badge " + (has ? "yes" : "no"), text: has ? "● In Store" : "○ not in Store" })]),
+      el("div", { class: "u" }, [e.url ? el("a", { href: e.url, target: "_blank", rel: "noopener", text: e.url }) : el("span", { text: "no URL" })]),
+      el("div", { class: "kv" }, [el("b", { text: e.author || "—" }), document.createTextNode("  ·  variant "), el("b", { text: e.variant || "org" }),
+        document.createTextNode("  ·  " + (e.section || ""))]),
+      el("div", { class: "tags" }, (e.tags || []).map(function (t) {
+        return el("span", { class: "tag" + (F.tag === t ? " hit" : ""), text: "#" + t, title: "Filter by this tag", on: { click: function (ev) { ev.stopPropagation(); $("fTag").value = t; F.tag = t; render(); } } });
+      }))
+    ]);
+    cb.addEventListener("change", function () { selL[e.id] = cb.checked; if (!cb.checked) delete selL[e.id]; blk.className = "blk" + (selL[e.id] ? " sel" : "") + (e.removed || e.hidden ? " gone" : ""); counts(); });
+    blk.addEventListener("dblclick", function () { selL = {}; selL[e.id] = true; render(); editSel(); });
+    dragSetup(blk, "lib", e.id); return blk;
+  }
+  function storeBlock(r, inL) {
+    var cb = el("input", { type: "checkbox" }); cb.checked = !!selS[r.key];
+    var has = !!r.e.source_repo && !!inL[normUrl(r.e.source_repo)];
+    var blk = el("div", { class: "blk" + (selS[r.key] ? " sel" : ""), "data-key": r.key }, [
+      el("div", { class: "t" }, [cb, el("span", { class: "nm", text: r.e.display_name || r.id }), el("span", { class: "badge " + (has ? "yes" : "no"), text: has ? "● In Library" : "○ not in Library" })]),
+      el("div", { class: "kv" }, [el("b", { text: r.id + " / " + r.variant }), document.createTextNode("  ·  " + (r.e.category || "") + "  ·  " + (r.e.hw_target || "no hw tag") + (r.e.fetch === false ? "  ·  not fetched" : ""))])
+    ]);
+    cb.addEventListener("change", function () { selS[r.key] = cb.checked; if (!cb.checked) delete selS[r.key]; blk.className = "blk" + (selS[r.key] ? " sel" : ""); counts(); });
+    dragSetup(blk, "store", r.key); return blk;
+  }
+  function counts() {
+    $("lSel").textContent = Object.keys(selL).length + " selected"; $("sSel").textContent = Object.keys(selS).length + " selected";
+    $("count").textContent = lib.entries.length + " in Library · " + storeRows().length + " in Store" + (dirtyL || dirtyS ? " · unsaved changes" : "");
+  }
+  function render() {
+    buildFilters();
+    var inS = storeUrlSet(), inL = libUrlSet(), ls = libShown(), ss = storeShown();
+    var ll = $("libList"), sl = $("storeList"); ll.textContent = ""; sl.textContent = "";
+    if (!ls.length) ll.appendChild(el("div", { class: "hint", text: lib.entries.length ? "No Library entries match the filters." : "Library is empty. Add a repo above, or open PLUZ5-infos.json." }));
+    ls.forEach(function (e) { ll.appendChild(libBlock(e, inS)); });
+    if (!ss.length) sl.appendChild(el("div", { class: "hint", text: "Store is empty. Drag blocks here." }));
+    ss.forEach(function (r) { sl.appendChild(storeBlock(r, inL)); });
+    $("libInfo").textContent = ls.length + " shown of " + lib.entries.length; $("storeInfo").textContent = ss.length + " shown of " + storeRows().length;
+    var name = (store.store_name || "").trim(); document.title = "PLUZ5 — Library" + (name ? " · " + name : "");
+    counts();
+  }
+
+  // ---------- actions ----------
+  function addToStore(entries) {
+    var inS = storeUrlSet(), added = 0, skipped = 0;
+    entries.forEach(function (e) {
+      if (!e.url) { skipped++; return; }
+      if (inS[normUrl(e.url)]) { skipped++; return; }
+      var s = toStoreEntry(e), key = s.variant, n = 2;
+      store.payloads[s.id] = store.payloads[s.id] || { variants: {} };
+      while (store.payloads[s.id].variants[key]) { key = s.variant + "-" + n++; }
+      store.payloads[s.id].variants[key] = s.e; inS[normUrl(e.url)] = true; added++;
+    });
+    dirtyS = true; return { added: added, skipped: skipped };
+  }
+  function doToStore(list) {
+    list = list || selectedLib();
+    if (!list.length) return status("Tick some Library blocks first (or drag them).", "warn");
+    var inS = storeUrlSet(), fresh = list.filter(function (e) { return e.url && !inS[normUrl(e.url)]; });
+    var skip = list.length - fresh.length;
+    if (!fresh.length) return status("Nothing to add: all selected are already in the Store (or have no URL).", "warn");
+    var notPay = fresh.filter(function (e) { return (e.tags || []).indexOf("payload") < 0; }).length;
+    var extra = (skip ? skip + " will be skipped (already in Store or no URL). " : "") +
+      (notPay ? notPay + " are not tagged #payload and may have no .elf/.bin release to fetch." : "");
+    confirmDiff(fresh.length + " entr" + (fresh.length === 1 ? "y" : "ies") + " will be added to the Store", fresh.map(function (e) { return e.name; }), extra, "Add to Store", function () {
+      var r = addToStore(fresh); status("Added " + r.added + " to the Store. Download payload_registry.json to keep it.", "ok");
+    });
+  }
+  $("toStore").addEventListener("click", function () { doToStore(); });
+  function doFromStore(rows) {
+    rows = rows || selectedStore();
+    if (!rows.length) return status("Tick some Store blocks first.", "warn");
+    confirmDiff(rows.length + " entr" + (rows.length === 1 ? "y" : "ies") + " will be removed from the Store (the Library keeps them)", rows.map(function (r) { return r.e.display_name || r.key; }), "", "Remove from Store", function () {
+      rows.forEach(function (r) { delete store.payloads[r.id].variants[r.variant]; if (!Object.keys(store.payloads[r.id].variants).length) delete store.payloads[r.id]; delete selS[r.key]; });
+      dirtyS = true; status("Removed " + rows.length + " from the Store.", "ok");
+    });
+  }
+  $("fromStore").addEventListener("click", function () { doFromStore(); });
+
+  function docBlock(e) {
+    return ["### " + e.name, "- **URL:** " + (e.url || "(none)"), "- **Author:** " + (e.author || ""), "- **Variant:** " + (e.variant || "org"),
+      "- **Desc:** " + (e.desc || ""), "- **Tags:** " + (e.tags || []).map(function (t) { return "#" + t; }).join(" "), "- **Notes:** " + (e.notes || "")].join("\n");
+  }
+  function copyText(text, what) {
+    function fallback() {
+      var ta = el("textarea", { style: "position:fixed;left:-9999px" }); ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand("copy"); } catch (x) {} ta.remove(); status(ok ? "Copied " + what + "." : "Copy was blocked by the browser.", ok ? "ok" : "err");
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { status("Copied " + what + ".", "ok"); }, fallback); else fallback();
+  }
+  function needLib() { var l = selectedLib(); if (!l.length) status("Tick some Library blocks first.", "warn"); return l; }
+  $("cpBlock").addEventListener("click", function () { var l = needLib(); if (l.length) copyText(l.map(docBlock).join("\n\n") + "\n", l.length + " block(s) as text"); });
+  $("cpJson").addEventListener("click", function () { var l = needLib(); if (l.length) copyText(JSON.stringify(l.length === 1 ? l[0] : l, null, 2), l.length + " entr" + (l.length === 1 ? "y" : "ies") + " as JSON"); });
+  $("cpStore").addEventListener("click", function () {
+    var l = needLib(); if (!l.length) return; var out = {};
+    l.forEach(function (e) { var s = toStoreEntry(e); out[s.id] = out[s.id] || { variants: {} }; out[s.id].variants[s.variant] = s.e; });
+    copyText(JSON.stringify(out, null, 2), "Store-format JSON");
+  });
+  $("cpSJson").addEventListener("click", function () {
+    var r = selectedStore(); if (!r.length) return status("Tick some Store blocks first.", "warn"); var out = {};
+    r.forEach(function (x) { out[x.id] = out[x.id] || { variants: {} }; out[x.id].variants[x.variant] = x.e; }); copyText(JSON.stringify(out, null, 2), "Store JSON");
+  });
+
+  function flag(label, key, verb, yes, no) {
+    var l = needLib(); if (!l.length) return;
+    var on = l.some(function (e) { return !e[key]; });                 // if any is off: switch all on, else all off
+    confirmDiff(l.length + " entr" + (l.length === 1 ? "y" : "ies") + " will be " + (on ? yes : no), l.map(function (e) { return e.name; }), key === "removed" && on ? "Removed entries stay in the json (restorable). Nothing is deleted." : "", label, function () {
+      l.forEach(function (e) { e[key] = on; }); dirtyL = true; status(verb + " " + l.length + ".", "ok");
+    });
+  }
+  $("hide").addEventListener("click", function () { flag("Apply", "hidden", "Updated", "hidden", "unhidden"); });
+  $("gone").addEventListener("click", function () { flag("Apply", "removed", "Updated", "marked removed", "restored"); });
+  $("purge").addEventListener("click", function () {
+    var l = selectedLib().filter(function (e) { return e.removed; });
+    if (!l.length) return status("Only entries already marked removed can be deleted forever. Mark them removed first.", "warn");
+    modal("Delete " + l.length + " entr" + (l.length === 1 ? "y" : "ies") + " forever?", listBlock(l.map(function (e) { return e.name; }), "This cannot be undone after you download the file. Type DELETE to confirm."), "Delete forever", function () {
+      var inp = document.getElementById("purgeConfirm"); if (!inp || inp.value !== "DELETE") { status("Not deleted: type DELETE in the box.", "warn"); return false; }
+      snap(); lib.entries = lib.entries.filter(function (e) { return l.indexOf(e) < 0; }); l.forEach(function (e) { delete selL[e.id]; }); dirtyL = true; render(); status("Deleted " + l.length + " forever.", "ok");
+    }); (function (d) { d.insertBefore(el("input", { id: "purgeConfirm", placeholder: "DELETE" }), d.lastChild); })(document.querySelector(".ov .dlg"));
+  });
+
+  function editSel() {
+    var l = selectedLib(); if (!l.length) return status("Tick a Library block first (or double-click one).", "warn");
+    if (l.length === 1) {
+      var e = l[0], f = {};
+      function inp(label, key, val, area) { var i = el(area ? "textarea" : "input"); i.value = val; f[key] = i; return [el("label", { text: label }), i]; }
+      var body = [].concat(inp("Name", "name", e.name), inp("URL", "url", e.url || ""), inp("Author", "author", e.author || ""), inp("Variant (org = original build)", "variant", e.variant || "org"),
+        inp("Section", "section", e.section || ""), inp("Description", "desc", e.desc || "", true), inp("Tags (space separated, with or without #)", "tags", (e.tags || []).join(" ")), inp("Notes", "notes", e.notes || "", true));
+      modal("Edit " + e.name, body, "Save", function () {
+        var url = f.url.value.trim(); if (url && !/^https:\/\//i.test(url)) { status("URL must start with https://", "err"); return false; }
+        if (!f.name.value.trim()) { status("Name cannot be empty.", "err"); return false; }
+        snap(); var oldId = e.id;
+        e.name = f.name.value.trim(); e.url = url; e.author = f.author.value.trim() || ownerOf(url); e.variant = f.variant.value.trim() || "org"; e.section = f.section.value.trim() || "General";
+        e.desc = f.desc.value.trim(); e.tags = f.tags.value.split(/\s+/).map(function (t) { return t.replace(/^#/, ""); }).filter(Boolean); e.notes = f.notes.value.trim();
+        var nid = mkId(e.name, e.variant), n = 2; if (nid !== oldId) { while (lib.entries.some(function (x) { return x !== e && x.id === nid; })) nid = mkId(e.name, e.variant) + "-" + n++; e.id = nid; delete selL[oldId]; selL[nid] = true; }
+        dirtyL = true; render(); status("Saved.", "ok");
+      });
+    } else {
+      var g = {};
+      function bi(label, key, ph) { var i = el("input", { placeholder: ph || "leave blank to keep" }); g[key] = i; return [el("label", { text: label }), i]; }
+      var b2 = [el("div", { class: "hint", text: "Bulk edit for " + l.length + " entries. Blank fields are left alone." })].concat(bi("Variant", "variant"), bi("Author", "author"), bi("Section", "section"), bi("Add tags", "add", "e.g. P5U payload"), bi("Remove tags", "rem", "e.g. old-tag"));
+      modal("Bulk edit " + l.length + " entries", b2, "Apply to " + l.length, function () {
+        snap(); function tl(v) { return v.split(/\s+/).map(function (t) { return t.replace(/^#/, ""); }).filter(Boolean); }
+        var add = tl(g.add.value), rem = tl(g.rem.value);
+        l.forEach(function (e) {
+          if (g.variant.value.trim()) e.variant = g.variant.value.trim(); if (g.author.value.trim()) e.author = g.author.value.trim(); if (g.section.value.trim()) e.section = g.section.value.trim();
+          e.tags = (e.tags || []).filter(function (t) { return rem.indexOf(t) < 0; }); add.forEach(function (t) { if (e.tags.indexOf(t) < 0) e.tags.push(t); });
+        });
+        dirtyL = true; render(); status("Updated " + l.length + " entries (ids keep their old names so links stay stable).", "ok");
+      });
+    }
+  }
+  $("edit").addEventListener("click", editSel);
+
+  // select helpers
+  $("lAll").addEventListener("click", function () { libShown().forEach(function (e) { selL[e.id] = true; }); render(); });
+  $("lNone").addEventListener("click", function () { selL = {}; render(); });
+  $("lInv").addEventListener("click", function () { var n = {}; libShown().forEach(function (e) { if (!selL[e.id]) n[e.id] = true; }); selL = n; render(); });
+  $("sAll").addEventListener("click", function () { storeShown().forEach(function (r) { selS[r.key] = true; }); render(); });
+  $("sNone").addEventListener("click", function () { selS = {}; render(); });
+  $("sInv").addEventListener("click", function () { var n = {}; storeShown().forEach(function (r) { if (!selS[r.key]) n[r.key] = true; }); selS = n; render(); });
+
+  // filters
+  $("fText").addEventListener("input", function () { F.text = this.value.trim(); render(); });
+  [["fAuthor", "author"], ["fVariant", "variant"], ["fTag", "tag"], ["fSection", "section"], ["fStore", "store"], ["fSort", "sort"]].forEach(function (p) {
+    $(p[0]).addEventListener("change", function () { F[p[1]] = this.value; render(); });
+  });
+  $("fGone").addEventListener("change", function () { F.gone = this.checked; render(); });
+
+  // drag & drop
+  function dropOn(col, kind) {
+    var c = $(col);
+    c.addEventListener("dragover", function (ev) { ev.preventDefault(); c.classList.add("over"); });
+    c.addEventListener("dragleave", function () { c.classList.remove("over"); });
+    c.addEventListener("drop", function (ev) {
+      ev.preventDefault(); c.classList.remove("over");
+      var d = (ev.dataTransfer.getData("text/plain") || "").split(":")[0];
+      if (kind === "store" && d === "lib") doToStore();
+      else if (kind === "lib" && d === "store") doFromStore();
+    });
+  }
+  dropOn("storeCol", "store"); dropOn("libCol", "lib");
+
+  // ---------- add by URL ----------
+  $("addBtn").addEventListener("click", function () {
+    var m = $("addUrl").value.trim().replace(/\.git$/, "").replace(/\/+$/, "").match(/^(?:https?:\/\/github\.com\/)?([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)(?:\/.*)?$/);
+    if (!m) return status("Paste a GitHub repo URL like https://github.com/owner/repo", "warn");
+    var btn = $("addBtn"); btn.disabled = true;
+    fetch("https://api.github.com/repos/" + m[1] + "/" + m[2], { headers: { Accept: "application/vnd.github+json" } }).then(function (r) {
+      if (r.status === 403 || r.status === 429) throw new Error("GitHub rate limit reached, try again later");
+      if (r.status === 404) throw new Error("not found (private or misspelled?)");
+      if (!r.ok) throw new Error("GitHub answered HTTP " + r.status); return r.json();
+    }).then(function (repo) {
+      if (libUrlSet()[normUrl(repo.html_url)]) return status("Already in the Library: " + repo.name, "warn");
+      var e = { id: mkId(repo.name, "org"), name: repo.name, url: repo.html_url, author: repo.owner.login, variant: "org", section: "Inbox",
+        desc: repo.description || "", tags: (repo.topics || []).slice(0, 8), notes: "", removed: false, hidden: false }, n = 2;
+      while (lib.entries.some(function (x) { return x.id === e.id; })) e.id = mkId(repo.name, "org") + "-" + n++;
+      snap(); lib.entries.push(e); dirtyL = true; $("addUrl").value = ""; selL = {}; selL[e.id] = true; render();
+      status("Added " + e.name + " to the Library (section Inbox).", "ok");
+      modal("Also put " + e.name + " in the Store?", [el("div", { class: "hint", text: "The Store is what pldmgr serves to the PS5. You can always do this later with → Store." })], "Yes, add to Store", function () { snap(); var r = addToStore([e]); render(); status("Added to the Library and the Store (" + r.added + ").", "ok"); });
+    }).catch(function (err) { status("Could not add: " + err.message, "err"); }).then(function () { btn.disabled = false; });
+  });
+
+  // ---------- files ----------
+  function loadLib(text) {
+    var d = JSON.parse(text); if (!d || !Array.isArray(d.entries)) throw new Error("Not a PLUZ5-infos.json (no \"entries\" list).");
+    d.entries.forEach(function (e) { e.tags = e.tags || []; e.variant = e.variant || "org"; });
+    snap(); lib = d; selL = {}; dirtyL = false; render();
+  }
+  function loadStore(text) {
+    var d = JSON.parse(text); if (!d || typeof d.payloads !== "object") throw new Error("Not a payload_registry.json (no \"payloads\" object).");
+    snap(); store = d; selS = {}; dirtyS = false; render();
+  }
+  function pick(btn, file, fn, label) {
+    $(btn).addEventListener("click", function () { $(file).click(); });
+    $(file).addEventListener("change", function () {
+      var f = this.files[0]; this.value = ""; if (!f) return;
+      f.text().then(fn).then(function () { status("Loaded " + label + ".", "ok"); }, function (e) { status("Could not load: " + e.message, "err"); });
+    });
+  }
+  pick("openLib", "fileLib", loadLib, "the Library"); pick("openStore", "fileStore", loadStore, "the Store");
+  function save(name, text, type) {
+    var a = el("a", { href: URL.createObjectURL(new Blob([text], { type: type || "application/json" })), download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  $("dlLib").addEventListener("click", function () {
+    var out = {}; Object.keys(lib).forEach(function (k) { if (k !== "entries" && k !== "powered_by") out[k] = lib[k]; });
+    out.entries = lib.entries; out.powered_by = POWERED; save("PLUZ5-infos.json", JSON.stringify(out, null, 2) + "\n"); dirtyL = false; counts();
+    status("Downloaded PLUZ5-infos.json. Upload it to data/ in your repo; the workflow rebuilds the .md and .xlsx.", "ok");
+  });
+  $("dlStore").addEventListener("click", function () {
+    var out = {}; Object.keys(store).forEach(function (k) { if (k !== "payloads" && k !== "powered_by") out[k] = store[k]; });
+    out.payloads = store.payloads; out.powered_by = POWERED; save("payload_registry.json", JSON.stringify(out, null, 2) + "\n"); dirtyS = false; counts();
+    status("Downloaded payload_registry.json. Upload it to configs/ in your repo (replace the old one).", "ok");
+  });
+  $("dlMd").addEventListener("click", function () {
+    var by = {}; lib.entries.forEach(function (e) { (by[e.section || "General"] = by[e.section || "General"] || []).push(e); });
+    var t = "# PLUZ5 Library\n\n_" + POWERED + "_\n\n"; Object.keys(by).forEach(function (s) { t += "## " + s + "\n\n" + by[s].map(function (e) { return docBlock(e) + (e.removed ? "\n- **Status:** removed" : ""); }).join("\n\n") + "\n\n"; });
+    save("PLUZ5-infos.md", t, "text/markdown");
+  });
+  $("loadRepo").addEventListener("click", function () {
+    var o = $("owner").value.trim(), r = $("repo").value.trim(), b = $("branch").value.trim() || "main";
+    if (!o || !r) return status("Fill in your GitHub user and repo name first.", "warn");
+    var base = "https://raw.githubusercontent.com/" + encodeURIComponent(o) + "/" + encodeURIComponent(r) + "/" + encodeURIComponent(b) + "/";
+    Promise.all([fetch(base + "data/PLUZ5-infos.json", { cache: "no-store" }), fetch(base + "configs/payload_registry.json", { cache: "no-store" })]).then(function (rs) {
+      if (!rs[0].ok || !rs[1].ok) throw new Error("HTTP " + rs[0].status + " / " + rs[1].status + " (repo private, or the name is wrong?)");
+      return Promise.all([rs[0].text(), rs[1].text()]);
+    }).then(function (t) { loadLib(t[0]); loadStore(t[1]); status("Loaded both files from your repo.", "ok"); }).catch(function (e) { status("Could not read your repo: " + e.message, "err"); });
+  });
+  window.addEventListener("beforeunload", function (e) { if (dirtyL || dirtyS) { e.preventDefault(); e.returnValue = ""; } });
+
+  // auto-load from the same site (GitHub Pages / local server); silent if it fails
+  var hm = location.hostname.match(/^([^.]+)\.github\.io$/i), seg = location.pathname.split("/").filter(Boolean)[0];
+  if (hm) { $("owner").value = hm[1]; if (seg && !/\.html$/.test(seg)) $("repo").value = seg; }
+  if (location.protocol.indexOf("http") === 0) {
+    Promise.all([fetch("../data/PLUZ5-infos.json"), fetch("../configs/payload_registry.json")]).then(function (rs) {
+      return Promise.all(rs.map(function (r) { return r.ok ? r.text() : null; }));
+    }).then(function (t) { if (t[0]) { lib = JSON.parse(t[0]); lib.entries = lib.entries || []; } if (t[1]) store = JSON.parse(t[1]); undo = []; $("undoBtn").disabled = true; render(); status("Loaded the Library and Store from this site.", "ok"); }).catch(function () {});
+  }
+  render();
+})();
+</script>
+</body>
+</html>

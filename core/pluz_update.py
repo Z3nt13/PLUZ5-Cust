@@ -93,6 +93,18 @@ def main(argv=None):
     mode = get_mode(cfg, env)
     groups = defaultdict(list)
     unresolved = []
+    # Files in payloads/ are always scanned: in hosted mode they are the store;
+    # in source mode they are your personal .elf/.bin files and win over upstream.
+    files = [p for p in payloads_dir.iterdir()
+             if p.is_file() and p.suffix.lstrip(".").lower() in {"elf", "bin"}] \
+        if payloads_dir.is_dir() else []
+    log.line(f"mode={mode}: {len(files)} file(s) in {payloads_dir.name}/")
+    local_keys = set()
+    for f in files:
+        pf = parse_filename_raw(f.name)
+        rid = resolve_identity(pf["name_part"], registry) if pf else None
+        if rid:
+            local_keys.add(f"{rid[0]}/{rid[1]}")
     if mode == "source":
         rp = resolved_path(root)
         resolved = load_json(rp) if rp.exists() else {}
@@ -102,16 +114,13 @@ def main(argv=None):
             reg_entry = registry.get(ident, {}).get("variants", {}).get(variant)
             if reg_entry is None:
                 continue                                  # removed from the registry
+            if key in local_keys:
+                log.line(f"  [LOCAL WINS] {key}: your file in {payloads_dir.name}/ is used instead of upstream")
+                continue
             rec = resolved[key]
             groups[(ident, variant)].append({
                 "filename": rec["filename"], "version": rec["version"], "expiry": None,
                 "sha256": rec["sha256"], "url": rec["url"], "registry": reg_entry})
-        files = []
-    else:
-        files = [p for p in payloads_dir.iterdir()
-                 if p.is_file() and p.suffix.lstrip(".").lower() in {"elf", "bin"}] \
-            if payloads_dir.is_dir() else []
-        log.line(f"mode=hosted: scanning {len(files)} files in {payloads_dir}")
 
     for f in sorted(files, key=lambda p: p.name):
         parsed = parse_filename_raw(f.name)

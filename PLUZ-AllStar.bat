@@ -126,6 +126,7 @@ call :step "[1/5] pluz-check" pluz_check.py || goto :end
 call :step "[2/5] pluz-fetch" pluz_fetch.py --apply || goto :end
 call :step "[3/5] pluz-update" pluz_update.py || goto :end
 call :step "[4/5] pluz-validate" pluz_validate.py || goto :end
+call :step "[4b/5] pluz-infos" pluz_infos.py || goto :end
 
 echo.
 echo ==================== [5/5] git add / commit / push ====================

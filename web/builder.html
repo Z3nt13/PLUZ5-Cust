@@ -64,7 +64,7 @@ footer b{color:var(--accent);font-weight:600}
 <body>
 <header>
   <div class="logo">PLUZ5<span>-Cust</span> Builder</div>
-  <a href="catalog.html">Catalog</a>
+  <a href="library.html">Library</a><a href="catalog.html">Catalog</a>
   <span class="hint" id="count" style="margin:0 0 0 auto"></span>
 </header>
 <main>
@@ -78,6 +78,15 @@ footer b{color:var(--accent);font-weight:600}
     <input id="token" class="grow" type="password" placeholder="Optional GitHub token (only raises the API rate limit; kept in memory, never saved)" autocomplete="off">
   </div>
   <div id="status"></div>
+  <details>
+    <summary>Add your own .elf / .bin (a file that is not on GitHub)</summary>
+    <div class="hint">1) Name it here. 2) Put the file in <code>payloads/</code> of your repo, named <code>name_v1.0.elf</code>. 3) Run the workflow. The file is hosted in your repo and wins over any upstream copy of the same name.</div>
+    <div class="row">
+      <input id="pName" class="grow" type="text" maxlength="40" placeholder="Name, e.g. my-tool (letters, numbers, dashes)">
+      <select id="pCat"></select>
+      <button id="pAdd">Add personal file</button>
+    </div>
+  </details>
 </section>
 
 <section>
@@ -92,6 +101,7 @@ footer b{color:var(--accent);font-weight:600}
     <button id="repoBtn" title="Reads configs/payload_registry.json from the repo named in section 3">Load from my repo</button>
     <button class="pri" id="dlBtn">Download payload_registry.json</button>
     <button id="saveBtn" style="display:none">Save to opened file</button>
+    <button id="noUrlBtn" title="Removes entries that have no source URL (your personal files are kept)">Remove entries without a source</button>
     <button class="del" id="clearBtn">Clear all</button>
     <input type="file" id="file" accept=".json,application/json" style="display:none">
   </div>
@@ -196,7 +206,7 @@ footer b{color:var(--accent);font-weight:600}
   function has(v) { return v != null && String(v).trim() !== "" && !/^unset/i.test(String(v).trim()); }
   function isUrl(v) { return /^https?:\/\//i.test(String(v || "")); }
   var INFO = [
-    ["Source URL", function (e) { return isUrl(e.source_repo) || isUrl(e.direct_url); }],
+    ["Source URL", function (e) { return isUrl(e.source_repo) || isUrl(e.direct_url) || isPersonal(e); }],
     ["Author", function (e) { return has(e.author); }],
     ["Author link", function (e) { return isUrl(e.author_url); }],
     ["Category", function (e) { return has(e.category) && e.category !== "Unknown"; }],
@@ -205,6 +215,7 @@ footer b{color:var(--accent);font-weight:600}
     ["Hardware tag", function (e) { return e.hw_target === "P5" || e.hw_target === "P5P" || e.hw_target === "P5U"; }],
     ["Note", function (e) { return has(e.note); }]
   ];
+  function isPersonal(e) { return e.source_repo === "personal"; }
   function score(e) {
     var missing = [];
     INFO.forEach(function (f) { if (!f[1](e)) missing.push(f[0]); });
@@ -316,7 +327,7 @@ footer b{color:var(--accent);font-weight:600}
   });
 
   // ---------- filters / sort / group ----------
-  function entryUrlState(r) { return (isUrl(r.e.source_repo) || isUrl(r.e.direct_url)) ? "has" : "none"; }
+  function entryUrlState(r) { return (isUrl(r.e.source_repo) || isUrl(r.e.direct_url) || isPersonal(r.e)) ? "has" : "none"; }
   function matches(r) {
     var q = $("filter").value.trim().toLowerCase();
     if (q && (r.id + " " + r.variant + " " + nm(r) + " " + (r.e.author || "")).toLowerCase().indexOf(q) < 0) return false;
@@ -530,6 +541,25 @@ footer b{color:var(--accent);font-weight:600}
     fileHandle.createWritable().then(function (w) { return w.write(jsonText()).then(function () { return w.close(); }); })
       .then(function () { setDirty(false); status("Saved to the opened file.", "ok"); })
       .catch(function (e) { status("Save failed: " + e.message, "err"); });
+  });
+  fillSelect("pCat", "Category…", CATS);
+  $("pAdd").addEventListener("click", function () {
+    var raw = $("pName").value.trim(), id = safeId(raw);
+    if (!raw) return status("Type a name for your file first.", "warn");
+    if (rows.some(function (r) { return r.id === id && r.variant === "default"; })) return status(id + " is already in the list.", "warn");
+    var cat = $("pCat").value; cat = (cat === "__keep" ? "Unknown" : cat);
+    rows.push({ id: id, variant: "default", sel: false, flags: [],
+      e: { display_name: raw, source_repo: "personal", author: "", author_url: "", backup_url: null, category: cat, channel: "stable",
+           fw_min: null, fw_max: null, port: null, protected_fallback: false, note: "Personal file hosted in this repo", fetch: false } });
+    $("pName").value = ""; render(); setDirty(true);
+    status("Added " + id + ". Now put the file in payloads/ named  " + id + "_v1.0.elf  (version in the name; .bin works too), then run the workflow.", "ok");
+  });
+  $("noUrlBtn").addEventListener("click", function () {
+    var bad = rows.filter(function (r) { return entryUrlState(r) === "none"; });
+    if (!bad.length) return status("Every entry has a source.", "ok");
+    if (!confirm("Remove " + bad.length + " entr" + (bad.length === 1 ? "y" : "ies") + " with no source URL?")) return;
+    rows = rows.filter(function (r) { return bad.indexOf(r) < 0; }); render(); setDirty(true);
+    status("Removed " + bad.length + ".", "ok");
   });
   $("clearBtn").addEventListener("click", function () {
     if (rows.length && !confirm("Remove all " + rows.length + " entries from this page? (Your repo is not touched.)")) return;

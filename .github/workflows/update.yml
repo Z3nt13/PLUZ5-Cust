@@ -11,6 +11,7 @@ on:
     paths:
       - 'payloads/**'
       - 'configs/**'
+      - 'data/**'
   workflow_dispatch: {}
 
 permissions:
@@ -46,11 +47,15 @@ jobs:
       - name: Validate
         run: python core/pluz_validate.py
 
+      # Rebuilds data/PLUZ5-infos.md and .xlsx from the Library json.
+      - name: Library files
+        run: python core/pluz_infos.py
+
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add payloads manifests
+          git add payloads manifests data
           if git diff --cached --quiet; then
             echo "No changes."
           else

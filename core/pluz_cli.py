@@ -14,6 +14,7 @@ COMMANDS = {
     "update": "pluz_update",
     "cleanup": "pluz_cleanup",
     "validate": "pluz_validate",
+    "infos": "pluz_infos",
     "dedupe": "pluz_dedupe",
     "ghclean": "pluz_ghclean",
     "debug": "pluz_debug",
